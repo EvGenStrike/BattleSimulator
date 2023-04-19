@@ -1,3 +1,3 @@
 ﻿
-using var game = new BattleSimulator.Game1();
+using var game = new BattleSimulator.View.MainView();
 game.Run();
