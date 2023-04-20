@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BattleSimulator.View;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -18,8 +19,10 @@ internal class Peasant : ITroop
     public int Cost { get; }
     public Vector2 InitialPosition { get; }
     public Vector2 CurrentPosition { get; private set; }
+    public int Width { get; }
+    public int Height { get; }
 
-    public Peasant(Vector2 initialPosition)
+    public Peasant(Vector2 initialPosition, int width, int height)
     {
         Health = 50;
         Damage = 25;
@@ -29,6 +32,9 @@ internal class Peasant : ITroop
         Cost = 50;
 
         InitialPosition = initialPosition;
+        CurrentPosition = InitialPosition;
+        Width = width;
+        Height = height;
     }
 
     public void Move()
@@ -37,7 +43,7 @@ internal class Peasant : ITroop
 
         if (keyboardState.IsKeyDown(Keys.Up))
         {
-            //CurrentPosition.Y -= MoveSpeed * (float)
+            //
         }
     }
 }

@@ -1,38 +1,40 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using BattleSimulator.Model;
 
 namespace BattleSimulator.View;
 
 internal class PeasantView : ISpriteView
 {
     public string SpriteAssetName => "Peasant_Sample";
-
-    private Texture2D sprite;
-    private Vector2 position;
+    public Texture2D Sprite { get; private set; }
 
     public void Initialize(GraphicsDeviceManager graphics)
     {
-        position = new Vector2(
-            graphics.PreferredBackBufferWidth / 2,
-            graphics.PreferredBackBufferHeight / 2
-        );
+        //position = new Vector2(
+        //    graphics.PreferredBackBufferWidth / 2,
+        //    graphics.PreferredBackBufferHeight / 2
+        //);
     }
 
     public void LoadContent(Texture2D spriteTexture)
     {
-        sprite = spriteTexture;
+        Sprite = spriteTexture;
     }
 
-    public void Draw(SpriteBatch spriteBatch, GameWindow gameWindow)
+    public void Draw(
+        SpriteBatch spriteBatch,
+        GameWindow gameWindow,
+        ITroop troop = null)
     {
         spriteBatch.Draw(
-                sprite,
-                position,
+                Sprite,
+                troop.CurrentPosition,
                 null,
                 Color.White,
                 0f,
-                new Vector2(sprite.Width / 2, sprite.Height / 2),
+                new Vector2(Sprite.Width / 2, Sprite.Height / 2),
                 Vector2.One,
                 SpriteEffects.None,
                 0f
