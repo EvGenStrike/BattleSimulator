@@ -17,4 +17,6 @@ public interface ITroop
     public int Cost { get; }
     public Vector2 InitialPosition { get; }
     public Vector2 CurrentPosition { get; }
+    public int Width { get; }
+    public int Height { get; }
 }
