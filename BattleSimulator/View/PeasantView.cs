@@ -5,7 +5,7 @@ using BattleSimulator.Model;
 
 namespace BattleSimulator.View;
 
-internal class PeasantView : ISpriteView
+internal class PeasantView : ITroopView
 {
     public string SpriteAssetName => "Peasant_Sample";
     public Texture2D Sprite { get; private set; }

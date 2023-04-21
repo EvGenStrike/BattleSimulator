@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BattleSimulator.View;
 
-public interface ISpriteView
+public interface ITroopView
 {
     public string SpriteAssetName { get; }
     public Texture2D Sprite { get; }

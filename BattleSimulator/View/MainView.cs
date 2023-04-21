@@ -16,8 +16,8 @@ public class MainView : Game
 
     private Field field;
 
-    private readonly BackgroundView backgroundView; 
-    private readonly Dictionary<Type, ISpriteView> troopsView;
+    private readonly List<IEnvironmentView> environmentView;
+    private readonly Dictionary<Type, ITroopView> troopsView;
     private List<ITextView> textsView;
 
     public MainView()
@@ -33,23 +33,28 @@ public class MainView : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-        backgroundView = new BackgroundView();
+        environmentView = new List<IEnvironmentView>
+        {
+            new BackgroundView()
+        };
         textsView = new List<ITextView>
         {
             new MoneyTextView()
         };
-        troopsView = new Dictionary<Type, ISpriteView>
+        troopsView = new Dictionary<Type, ITroopView>
         {
             { typeof(Peasant), new PeasantView() },
         };
 
-        field = new Field();
+        field = new Field(1920, 1080);
     }
 
     protected override void Initialize()
-    {
-        backgroundView.Initialize(_graphics, Window);       
-
+    {     
+        foreach (var environmentElement in  environmentView)
+        {
+            environmentElement.Initialize(_graphics, Window);
+        }
         foreach (var sprite in troopsView.Values)
         {
             sprite.Initialize(_graphics, Window);
@@ -62,7 +67,11 @@ public class MainView : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         
-        backgroundView.LoadContent(Content.Load<Texture2D>(backgroundView.SpriteAssetName));
+        foreach (var environmentElement in environmentView)
+        {
+            var content = Content.Load<Texture2D>(environmentElement.SpriteAssetName);
+            environmentElement.LoadContent(content);
+        }
         foreach (var sprite in troopsView.Values)
         {
             var content = Content.Load<Texture2D>(sprite.SpriteAssetName);
@@ -107,7 +116,11 @@ public class MainView : Game
 
         _spriteBatch.Begin();
 
-        backgroundView.Draw(_spriteBatch);
+        foreach (var environmentView in environmentView)
+        {
+            environmentView.Draw(_spriteBatch);
+        }
+        _spriteBatch.DrawRectange(field.LineSeparator, Color.Red);
         foreach (var troop in field.Troops)
         {
             var viewType = troopsView[troop.GetType()];
@@ -115,7 +128,12 @@ public class MainView : Game
         }
         foreach (var text in textsView)
         {
-            var newText = text.GetType() == typeof(MoneyTextView) ? field.Money.ToString() : "";
+            var newText = string.Empty;
+
+            var textType = text.GetType();
+            if (textType == typeof(MoneyTextView))
+                newText = field.Money.ToString();
+            
             text.Draw(_spriteBatch, Window, newText);
         }
         
