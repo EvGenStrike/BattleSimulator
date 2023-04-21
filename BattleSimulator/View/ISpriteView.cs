@@ -14,10 +14,11 @@ public interface ISpriteView
     public string SpriteAssetName { get; }
     public Texture2D Sprite { get; }
 
-    public void Initialize(GraphicsDeviceManager graphics);
+    public void Initialize(
+        GraphicsDeviceManager graphics,
+        GameWindow gameWindow);
     public void LoadContent(Texture2D spriteTexture);
     public void Draw(
         SpriteBatch spriteBatch,
-        GameWindow gameWindow,
         ITroop troop = null);
 }

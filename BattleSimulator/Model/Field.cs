@@ -9,7 +9,8 @@ namespace BattleSimulator.Model;
 
 internal class Field
 {
-    public List<ITroop> Troops { get; set; }
+    public List<ITroop> Troops { get; }
+    public int Money { get; private set; }
 
     private List<Rectangle> TroopsCollisions { get; set; }
 
@@ -19,6 +20,7 @@ internal class Field
     {
         Troops = new();
         TroopsCollisions = new();
+        Money = 1000;
     }
 
     public void AddTroopEvent(Func<ITroop> addTroopEvent)
@@ -33,14 +35,23 @@ internal class Field
             throw new Exception("AddTroopEvent is not subscribed");
         var troop = addTroopEvent();
         addTroopEvent = null;
-        if (CausesCollision(troop))
+        if (!CanPlaceTroop(troop))
             return;
         Troops.Add(troop);
+        Money -= troop.Cost;
         TroopsCollisions.Add(new Rectangle(
             (int)troop.InitialPosition.X, 
             (int)troop.InitialPosition.Y, 
             troop.Width, 
             troop.Height));
+    }
+
+    public bool CanPlaceTroop(ITroop troop)
+    {
+        if (troop.Cost > Money
+            || CausesCollision(troop))
+            return false;
+        return true;
     }
 
     public bool CausesCollision(ITroop troop)

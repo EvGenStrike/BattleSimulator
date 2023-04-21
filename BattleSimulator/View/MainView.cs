@@ -16,8 +16,9 @@ public class MainView : Game
 
     private Field field;
 
-    private BackgroundView backgroundView; 
-    private readonly Dictionary<Type, ISpriteView> allSprites;
+    private readonly BackgroundView backgroundView; 
+    private readonly Dictionary<Type, ISpriteView> troopsView;
+    private List<ITextView> textsView;
 
     public MainView()
     {
@@ -26,14 +27,18 @@ public class MainView : Game
         {
             PreferredBackBufferWidth = 1920,
             PreferredBackBufferHeight = 1080,
-            IsFullScreen = true
+            IsFullScreen = true,
         };
 
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
         backgroundView = new BackgroundView();
-        allSprites = new Dictionary<Type, ISpriteView>
+        textsView = new List<ITextView>
+        {
+            new MoneyTextView()
+        };
+        troopsView = new Dictionary<Type, ISpriteView>
         {
             { typeof(Peasant), new PeasantView() },
         };
@@ -43,10 +48,11 @@ public class MainView : Game
 
     protected override void Initialize()
     {
-        backgroundView.Initialize(_graphics);
-        foreach (var sprite in allSprites.Values)
+        backgroundView.Initialize(_graphics, Window);       
+
+        foreach (var sprite in troopsView.Values)
         {
-            sprite.Initialize(_graphics);
+            sprite.Initialize(_graphics, Window);
         }
 
         base.Initialize();
@@ -57,10 +63,15 @@ public class MainView : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         
         backgroundView.LoadContent(Content.Load<Texture2D>(backgroundView.SpriteAssetName));
-        foreach (var sprite in allSprites.Values)
+        foreach (var sprite in troopsView.Values)
         {
             var content = Content.Load<Texture2D>(sprite.SpriteAssetName);
             sprite.LoadContent(content);
+        }
+        foreach (var text in textsView)
+        {
+            var content = Content.Load<SpriteFont>(text.TextAssetName);
+            text.LoadContent(content);
         }
     }
 
@@ -81,7 +92,7 @@ public class MainView : Game
             {
                 var random = new Random();
                 var position = new Vector2(mouseState.X, mouseState.Y);
-                var sprite = allSprites[typeof(Peasant)].Sprite;
+                var sprite = troopsView[typeof(Peasant)].Sprite;
                 return new Peasant(position, sprite.Width, sprite.Height);
             });
             
@@ -96,11 +107,16 @@ public class MainView : Game
 
         _spriteBatch.Begin();
 
-        backgroundView.Draw(_spriteBatch, Window);
+        backgroundView.Draw(_spriteBatch);
         foreach (var troop in field.Troops)
         {
-            var viewType = allSprites[troop.GetType()];
-            viewType.Draw(_spriteBatch, Window, troop);
+            var viewType = troopsView[troop.GetType()];
+            viewType.Draw(_spriteBatch, troop);
+        }
+        foreach (var text in textsView)
+        {
+            var newText = text.GetType() == typeof(MoneyTextView) ? field.Money.ToString() : "";
+            text.Draw(_spriteBatch, Window, newText);
         }
         
         _spriteBatch.End();

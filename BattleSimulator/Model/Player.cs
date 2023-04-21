@@ -9,4 +9,9 @@ namespace BattleSimulator.Model;
 internal class Player
 {
     public int Money { get; set; }
+
+    public Player(int money)
+    {
+        Money = money;
+    }
 }

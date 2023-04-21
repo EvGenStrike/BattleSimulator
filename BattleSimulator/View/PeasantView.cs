@@ -10,7 +10,7 @@ internal class PeasantView : ISpriteView
     public string SpriteAssetName => "Peasant_Sample";
     public Texture2D Sprite { get; private set; }
 
-    public void Initialize(GraphicsDeviceManager graphics)
+    public void Initialize(GraphicsDeviceManager graphics, GameWindow gameWindow)
     {
         //position = new Vector2(
         //    graphics.PreferredBackBufferWidth / 2,
@@ -25,7 +25,6 @@ internal class PeasantView : ISpriteView
 
     public void Draw(
         SpriteBatch spriteBatch,
-        GameWindow gameWindow,
         ITroop troop = null)
     {
         spriteBatch.Draw(
