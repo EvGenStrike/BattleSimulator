@@ -1,8 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BattleSimulator.View;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Model;
@@ -67,8 +70,8 @@ internal class Field
         return troop.Cost <= Money
             && !CausesCollision(troop)
             && IsTroopWithinBorders(troop);
-
     }
+
 
     private bool CausesCollision(ITroop troop)
     {
@@ -90,16 +93,27 @@ internal class Field
         var middleWidthLength = troop.Width / 2;
         var middleHeightLength = troop.Height / 2;
 
-        return ((troop.InitialPosition.X - middleWidthLength) >= AcceptableArea.X
-            && (troop.InitialPosition.Y - middleHeightLength) >= AcceptableArea.Y
-            && (troop.InitialPosition.X + middleWidthLength) <= (AcceptableArea.X + AcceptableArea.Width)
-            && (troop.InitialPosition.Y + middleHeightLength) <= (AcceptableArea.Y + AcceptableArea.Height));
+        if (AcceptableArea != default)
+            return ((troop.InitialPosition.X - middleWidthLength) >= AcceptableArea.X
+                && (troop.InitialPosition.Y - middleHeightLength) >= AcceptableArea.Y
+                && (troop.InitialPosition.X + middleWidthLength) <= (AcceptableArea.X + AcceptableArea.Width)
+                && (troop.InitialPosition.Y + middleHeightLength) <= (AcceptableArea.Y + AcceptableArea.Height));
+        return ((troop.InitialPosition.X - middleWidthLength) >= 0
+            && (troop.InitialPosition.Y - middleHeightLength) >= 0
+            && (troop.InitialPosition.X + middleWidthLength) <= LineSeparator.X
+            && (troop.InitialPosition.Y + middleHeightLength) <= FieldHeight);
+    }
 
-        //OLD WAY
-        //return ((troop.InitialPosition.X - middleWidthLength) >= 0
-        //    && (troop.InitialPosition.Y - middleHeightLength) >= 0
-        //    && (troop.InitialPosition.X + middleWidthLength) <= LineSeparator.X
-        //    && (troop.InitialPosition.Y + middleHeightLength) <= FieldHeight);
+    public bool CanPlaceTroop(
+        Vector2 mousePosition,
+        int width,
+        int height)
+    {
+        return CanPlaceTroop(new Peasant(
+            mousePosition,
+            width,
+            height
+            ));
     }
 
     public void RemoveTroop()

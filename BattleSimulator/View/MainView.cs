@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace BattleSimulator.View;
 
@@ -24,7 +23,7 @@ public class MainView : Game
 
     private List<Button> generalButtons;
     private Dictionary<ClickedTroopButtonEnum, Button> troopButtons;
-    private ClickedTroopButtonEnum clickedTroopButton;
+    private ClickedTroopButtonEnum clickedTroopType;
 
     public MainView()
     {
@@ -65,7 +64,8 @@ public class MainView : Game
                 Color.Black,
                 fieldWidth / 10,
                 fieldHeight / 10)
-        };
+        };        
+
         troopButtons = GenerateTroopsButtons();
 
         field = new Field(
@@ -79,7 +79,7 @@ public class MainView : Game
             (int)troopButtons.FirstOrDefault().Value.Position.Y)
             );
 
-        clickedTroopButton = ClickedTroopButtonEnum.None;
+        clickedTroopType = ClickedTroopButtonEnum.None;
     }
 
     protected override void Initialize()
@@ -95,7 +95,7 @@ public class MainView : Game
         {
             troopButton.AddButtonEvent((sender, e) =>
             {
-                clickedTroopButton = (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopButton.Text);
+                clickedTroopType = (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopButton.Text);
                 troopButton.IsChosen = true;
                             
                 foreach (var previousTroopButton in troopButtons.Values)
@@ -173,7 +173,7 @@ public class MainView : Game
         {
             field.AddTroopEvent(() =>
             {
-                switch (clickedTroopButton)
+                switch (clickedTroopType)
                 {
                     case ClickedTroopButtonEnum.None:
                         return null;
@@ -201,6 +201,7 @@ public class MainView : Game
             environmentView.Draw(_spriteBatch);
         }
         _spriteBatch.DrawRectangle(field.LineSeparator, Color.Red);
+        DrawUnderMouseRectangle();
         foreach (var troop in field.Troops)
         {
             var viewType = troopsView[troop.GetType()];
@@ -216,7 +217,6 @@ public class MainView : Game
 
             text.Draw(_spriteBatch, Window, newText);
         }
-
         foreach (var generalButton in generalButtons)
         {
             generalButton.Draw(gameTime, _spriteBatch);
@@ -250,4 +250,30 @@ public class MainView : Game
 
         return troopsButtons;
     }
+
+    private void DrawUnderMouseRectangle()
+    {
+        if (clickedTroopType == ClickedTroopButtonEnum.None) return;
+        var mousePosition = Mouse.GetState().Position.ToVector2();
+        var underMouseRectangle = GetUnderMouseRectangle(mousePosition);        
+        var troopType = Type.GetType($"BattleSimulator.Model.{clickedTroopType}");
+        var currentTroopSprite = troopsView[troopType].Sprite;
+        _spriteBatch.DrawRectangle(
+            underMouseRectangle,
+            field.CanPlaceTroop(mousePosition, currentTroopSprite.Width, currentTroopSprite.Height)
+            ? Color.Green
+            : Color.Red);
+    }
+
+    private Rectangle GetUnderMouseRectangle(Vector2 mousePosition)
+    {
+        var size = fieldHeight / 20;
+        var halfSize = size / 2;
+        var x = (int)mousePosition.X;
+        var y = (int)mousePosition.Y;
+
+        return new Rectangle(x - halfSize, y - halfSize, size, size);
+    }
+
+
 }
