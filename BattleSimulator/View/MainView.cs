@@ -15,18 +15,26 @@ public class MainView : Game
     private SpriteBatch _spriteBatch;
 
     private Field field;
+    private readonly int fieldWidth;
+    private readonly int fieldHeight;
 
     private readonly List<IEnvironmentView> environmentView;
     private readonly Dictionary<Type, ITroopView> troopsView;
     private List<ITextView> textsView;
 
+    private List<Button> generalButtons;
+    private Dictionary<ClickedTroopButtonEnum, Button> troopButtons;
+    private ClickedTroopButtonEnum clickedTroopButton;
+
     public MainView()
     {
+        fieldWidth = 1920;
+        fieldHeight = 1080;
+
         _graphics = new GraphicsDeviceManager(this)
-        //;
         {
-            PreferredBackBufferWidth = 1920,
-            PreferredBackBufferHeight = 1080,
+            PreferredBackBufferWidth = fieldWidth,
+            PreferredBackBufferHeight = fieldHeight,
             IsFullScreen = true,
         };
 
@@ -39,19 +47,64 @@ public class MainView : Game
         };
         textsView = new List<ITextView>
         {
-            new MoneyTextView()
+            new MoneyTextView(
+                "",
+                new Vector2(fieldWidth / 100, fieldHeight),
+                Color.Gold
+                )
         };
         troopsView = new Dictionary<Type, ITroopView>
         {
             { typeof(Peasant), new PeasantView() },
         };
+        generalButtons = new List<Button>
+        {
+            new Button(
+                new Vector2(fieldWidth / 2, 0),
+                "Start",
+                Color.Black,
+                fieldWidth / 10,
+                fieldHeight / 10)
+        };
+        troopButtons = GenerateTroopsButtons();
 
-        field = new Field(1920, 1080);
+        field = new Field(
+            fieldWidth,
+            fieldHeight
+            );
+        field.AddAcceptableArea(new Rectangle(
+            0,
+            0,
+            field.LineSeparator.X,
+            (int)troopButtons.FirstOrDefault().Value.Position.Y)
+            );
+
+        clickedTroopButton = ClickedTroopButtonEnum.None;
     }
 
     protected override void Initialize()
-    {     
-        foreach (var environmentElement in  environmentView)
+    {
+        foreach (var generalButton in generalButtons)
+        {
+            generalButton.AddButtonEvent((sender, e) => 
+            {
+                generalButton.Text = "Start1";
+            });
+        }
+        foreach (var troopButton in troopButtons.Values)
+        {
+            troopButton.AddButtonEvent((sender, e) =>
+            {
+                clickedTroopButton = (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopButton.Text);
+                troopButton.IsChosen = true;
+                            
+                foreach (var previousTroopButton in troopButtons.Values)
+                {
+                    previousTroopButton.IsChosen = previousTroopButton == troopButton;
+                }
+            });
+        }
+        foreach (var environmentElement in environmentView)
         {
             environmentElement.Initialize(_graphics, Window);
         }
@@ -66,7 +119,19 @@ public class MainView : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-        
+
+        foreach (var generalButton in generalButtons)
+        {
+            var textureContent = Content.Load<Texture2D>("Button_Sample");
+            var fontContent = Content.Load<SpriteFont>("ButtonFont_Sample");
+            generalButton.LoadContent(textureContent, fontContent);
+        }
+        foreach (var troopButton in troopButtons.Values)
+        {
+            var textureContent = Content.Load<Texture2D>("Button_Sample");
+            var fontContent = Content.Load<SpriteFont>("ButtonFont_Sample");
+            troopButton.LoadContent(textureContent, fontContent);
+        }
         foreach (var environmentElement in environmentView)
         {
             var content = Content.Load<Texture2D>(environmentElement.SpriteAssetName);
@@ -94,17 +159,33 @@ public class MainView : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
+        foreach (var generalButton in generalButtons)
+        {
+            generalButton.Update(gameTime);
+        }
+        foreach (var troopButton in troopButtons.Values)
+        {
+            troopButton.Update(gameTime);
+        }
+
         var mouseState = Mouse.GetState();
         if (mouseState.LeftButton == ButtonState.Pressed)
         {
             field.AddTroopEvent(() =>
             {
-                var random = new Random();
-                var position = new Vector2(mouseState.X, mouseState.Y);
-                var sprite = troopsView[typeof(Peasant)].Sprite;
-                return new Peasant(position, sprite.Width, sprite.Height);
+                switch (clickedTroopButton)
+                {
+                    case ClickedTroopButtonEnum.None:
+                        return null;
+                    case ClickedTroopButtonEnum.Peasant:
+                        var position = new Vector2(mouseState.X, mouseState.Y);
+                        var sprite = troopsView[typeof(Peasant)].Sprite;
+                        return new Peasant(position, sprite.Width, sprite.Height);
+                    default:
+                        return null;
+                }
             });
-            
+
         }
 
         base.Update(gameTime);
@@ -115,12 +196,11 @@ public class MainView : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin();
-
         foreach (var environmentView in environmentView)
         {
             environmentView.Draw(_spriteBatch);
         }
-        _spriteBatch.DrawRectange(field.LineSeparator, Color.Red);
+        _spriteBatch.DrawRectangle(field.LineSeparator, Color.Red);
         foreach (var troop in field.Troops)
         {
             var viewType = troopsView[troop.GetType()];
@@ -133,12 +213,41 @@ public class MainView : Game
             var textType = text.GetType();
             if (textType == typeof(MoneyTextView))
                 newText = field.Money.ToString();
-            
+
             text.Draw(_spriteBatch, Window, newText);
+        }
+
+        foreach (var generalButton in generalButtons)
+        {
+            generalButton.Draw(gameTime, _spriteBatch);
+        }
+        foreach (var troopButton in troopButtons.Values)
+        {
+            troopButton.Draw(gameTime, _spriteBatch);
         }
         
         _spriteBatch.End();
 
         base.Draw(gameTime);
+    }
+
+    private Dictionary<ClickedTroopButtonEnum, Button> GenerateTroopsButtons()
+    {
+        var troopsButtons = new Dictionary<ClickedTroopButtonEnum, Button>();
+        var buttonWidth = fieldWidth / 10;
+        var buttonHeight = fieldHeight / 10;
+        var leftPositionX = fieldWidth / 5;
+
+        var previousPosition = new Vector2(leftPositionX, fieldHeight - buttonHeight);
+        foreach (var troopName in Enum.GetNames(typeof(ClickedTroopButtonEnum)))
+        {
+            if (troopName == "None") continue;
+            troopsButtons.Add(
+                (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopName),
+                new Button(previousPosition, troopName, buttonWidth, buttonHeight));
+            previousPosition.X += buttonWidth;
+        }
+
+        return troopsButtons;
     }
 }

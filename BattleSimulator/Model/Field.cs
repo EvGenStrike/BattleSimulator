@@ -10,6 +10,7 @@ namespace BattleSimulator.Model;
 internal class Field
 {
     public List<ITroop> Troops { get; }
+    public Rectangle AcceptableArea { get; private set; }
     public Rectangle LineSeparator { get; }
     public int Money { get; private set; }
     public int FieldWidth { get; }
@@ -26,7 +27,7 @@ internal class Field
         Money = 10000;
         FieldWidth = fieldWIdth;
         FieldHeight = fieldHeight;
-        LineSeparator = GenerateLineSeparator();        
+        LineSeparator = GenerateLineSeparator();    
     }
 
     public Rectangle GenerateLineSeparator()
@@ -40,19 +41,19 @@ internal class Field
 
     public void AddTroopEvent(Func<ITroop> addTroopEvent)
     {
+        if (addTroopEvent() == null)
+            return;
         this.addTroopEvent += addTroopEvent;
         AddTroop();
     }
 
     public void AddTroop()
     {
-        if (addTroopEvent == null)
-            throw new Exception("AddTroopEvent is not subscribed");
         var troop = addTroopEvent();
         addTroopEvent = null;
         if (!CanPlaceTroop(troop))
             return;
-        Troops.Add(troop);
+        Troops.Add(troop); 
         Money -= troop.Cost;
         TroopsCollisions.Add(new Rectangle(
             (int)troop.InitialPosition.X, 
@@ -88,10 +89,17 @@ internal class Field
     {
         var middleWidthLength = troop.Width / 2;
         var middleHeightLength = troop.Height / 2;
-        return ((troop.InitialPosition.X - middleWidthLength) >= 0 
-            && (troop.InitialPosition.Y - middleHeightLength) >= 0
-            && (troop.InitialPosition.X + middleWidthLength) <= LineSeparator.X
-            && (troop.InitialPosition.Y + middleHeightLength) <= FieldHeight);
+
+        return ((troop.InitialPosition.X - middleWidthLength) >= AcceptableArea.X
+            && (troop.InitialPosition.Y - middleHeightLength) >= AcceptableArea.Y
+            && (troop.InitialPosition.X + middleWidthLength) <= (AcceptableArea.X + AcceptableArea.Width)
+            && (troop.InitialPosition.Y + middleHeightLength) <= (AcceptableArea.Y + AcceptableArea.Height));
+
+        //OLD WAY
+        //return ((troop.InitialPosition.X - middleWidthLength) >= 0
+        //    && (troop.InitialPosition.Y - middleHeightLength) >= 0
+        //    && (troop.InitialPosition.X + middleWidthLength) <= LineSeparator.X
+        //    && (troop.InitialPosition.Y + middleHeightLength) <= FieldHeight);
     }
 
     public void RemoveTroop()
@@ -102,5 +110,10 @@ internal class Field
     public void GetTroops()
     {
         throw new NotImplementedException();
+    }
+
+    public void AddAcceptableArea(Rectangle accebtableArea)
+    {
+        AcceptableArea = accebtableArea;
     }
 }

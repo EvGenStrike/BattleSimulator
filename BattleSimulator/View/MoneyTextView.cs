@@ -16,10 +16,21 @@ internal class MoneyTextView : ITextView
     public string TextAssetName { get; } = "MyFont";
     public SpriteFont TextFont { get; private set; }
 
+    private string userText;
     private string text;
     private Vector2 textSize;
+
+    private Vector2 userPosition;
     private Vector2 position;
 
+    private Color color;
+
+    public MoneyTextView(string text, Vector2 position, Color color)
+    {
+        userText = text;
+        userPosition = position;
+        this.color = color;
+    }
 
     public void LoadContent(SpriteFont font)
     {
@@ -31,17 +42,14 @@ internal class MoneyTextView : ITextView
         GameWindow gameWindow,
         string newText = "")
     {
-        text = $"Money : {newText}";
+        text = $"{userText}{newText}";
         textSize = TextFont.MeasureString(text);
-        position = new Vector2(
-            gameWindow.ClientBounds.Width / 100,
-            gameWindow.ClientBounds.Height - textSize.Y
-        );
+        position = new Vector2(userPosition.X, userPosition.Y - textSize.Y);
         spriteBatch.DrawString(
             TextFont,
             text,
             position,
-            Color.White,
+            color,
             0,
             Vector2.One,
             1.0f,

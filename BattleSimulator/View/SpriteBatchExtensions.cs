@@ -10,7 +10,7 @@ namespace BattleSimulator.View;
 
 public static class SpriteBatchExtensions
 {
-    public static void DrawRectange(this SpriteBatch spriteBatch, Rectangle rectangle, Color color)
+    public static void DrawRectangle(this SpriteBatch spriteBatch, Rectangle rectangle, Color color)
     {
         var rect = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
         rect.SetData(new[] { Color.White });
