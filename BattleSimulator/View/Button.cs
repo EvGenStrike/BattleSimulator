@@ -117,11 +117,5 @@ public class Button : Component
             }
         }
     }
-
-    public void AddButtonEvent(EventHandler buttonEvent)
-    {
-        Click += buttonEvent;
-    }
-
     #endregion
 }

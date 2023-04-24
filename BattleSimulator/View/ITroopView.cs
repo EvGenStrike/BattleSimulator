@@ -20,5 +20,6 @@ public interface ITroopView
     public void LoadContent(Texture2D spriteTexture);
     public void Draw(
         SpriteBatch spriteBatch,
-        ITroop troop = null);
+        ITroop troop);
+    public void SetColorForTroopUnderMouse(Color color, ITroop troop);
 }

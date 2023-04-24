@@ -21,7 +21,8 @@ internal class Field
 
     private List<Rectangle> TroopsCollisions { get; set; }
 
-    private event Func<ITroop> addTroopEvent;
+    public event Func<ITroop> addTroopEvent;
+    private event Action<Vector2> removeTroopEvent;
 
     public Field(int fieldWIdth, int fieldHeight)
     {
@@ -50,7 +51,7 @@ internal class Field
         AddTroop();
     }
 
-    public void AddTroop()
+    private void AddTroop()
     {
         var troop = addTroopEvent();
         addTroopEvent = null;
@@ -65,7 +66,7 @@ internal class Field
             troop.Height));
     }
 
-    public bool CanPlaceTroop(ITroop troop)
+    private bool CanPlaceTroop(ITroop troop)
     {
         return troop.Cost <= Money
             && !CausesCollision(troop)
@@ -94,10 +95,10 @@ internal class Field
         var middleHeightLength = troop.Height / 2;
 
         if (AcceptableArea != default)
-            return ((troop.InitialPosition.X - middleWidthLength) >= AcceptableArea.X
-                && (troop.InitialPosition.Y - middleHeightLength) >= AcceptableArea.Y
-                && (troop.InitialPosition.X + middleWidthLength) <= (AcceptableArea.X + AcceptableArea.Width)
-                && (troop.InitialPosition.Y + middleHeightLength) <= (AcceptableArea.Y + AcceptableArea.Height));
+            return ((troop.InitialPosition.X) >= AcceptableArea.X
+                && (troop.InitialPosition.Y) >= AcceptableArea.Y
+                && (troop.InitialPosition.X + troop.Width) <= (AcceptableArea.X + AcceptableArea.Width)
+                && (troop.InitialPosition.Y + troop.Height) <= (AcceptableArea.Y + AcceptableArea.Height));
         return ((troop.InitialPosition.X - middleWidthLength) >= 0
             && (troop.InitialPosition.Y - middleHeightLength) >= 0
             && (troop.InitialPosition.X + middleWidthLength) <= LineSeparator.X
@@ -110,15 +111,54 @@ internal class Field
         int height)
     {
         return CanPlaceTroop(new Peasant(
-            mousePosition,
+            new Vector2(
+                mousePosition.X - width / 2,
+                mousePosition.Y - height / 2
+                ),
             width,
             height
             ));
     }
 
-    public void RemoveTroop()
+    public void RemoveTroopEvent(Action<Vector2> removeTroopEvent)
     {
-        throw new NotImplementedException();
+        this.removeTroopEvent += removeTroopEvent;
+        
+    }
+
+    public void RemoveTroop(Vector2 position)
+    {
+        var i = GetTroopIndexByPosition(position);
+        if (i == -1) return;
+        Money += Troops[i].Cost;
+        Troops.RemoveAt(i);
+        TroopsCollisions.RemoveAt(i);
+    }
+
+    public ITroop GetTroopByPosition(Vector2 position)
+    {
+        for (var i = 0; i < TroopsCollisions.Count; i++)
+        {
+            if (TroopsCollisions[i].Contains(position))
+            {
+                return Troops[i];
+            }
+        }
+        
+        return null;
+    }
+
+    public int GetTroopIndexByPosition(Vector2 position)
+    {
+        for (var i = 0; i < TroopsCollisions.Count; i++)
+        {
+            if (TroopsCollisions[i].Contains(position))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void GetTroops()

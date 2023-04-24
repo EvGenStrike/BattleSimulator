@@ -13,13 +13,15 @@ public class MainView : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
 
-    private Field field;
+    private readonly Field field;
     private readonly int fieldWidth;
     private readonly int fieldHeight;
 
     private readonly List<IEnvironmentView> environmentView;
     private readonly Dictionary<Type, ITroopView> troopsView;
+    private readonly List<ITroopView> troopsView1;
     private List<ITextView> textsView;
+    private List<Rectangle> rectanglesView;
 
     private List<Button> generalButtons;
     private Dictionary<ClickedTroopButtonEnum, Button> troopButtons;
@@ -34,7 +36,7 @@ public class MainView : Game
         {
             PreferredBackBufferWidth = fieldWidth,
             PreferredBackBufferHeight = fieldHeight,
-            IsFullScreen = true,
+            //IsFullScreen = true,
         };
 
         Content.RootDirectory = "Content";
@@ -56,6 +58,8 @@ public class MainView : Game
         {
             { typeof(Peasant), new PeasantView() },
         };
+        troopsView1 = new List<ITroopView>();
+
         generalButtons = new List<Button>
         {
             new Button(
@@ -64,9 +68,10 @@ public class MainView : Game
                 Color.Black,
                 fieldWidth / 10,
                 fieldHeight / 10)
-        };        
+        };
 
         troopButtons = GenerateTroopsButtons();
+        var troopButtonY = (int)troopButtons.FirstOrDefault().Value.Position.Y;
 
         field = new Field(
             fieldWidth,
@@ -76,8 +81,13 @@ public class MainView : Game
             0,
             0,
             field.LineSeparator.X,
-            (int)troopButtons.FirstOrDefault().Value.Position.Y)
+            troopButtonY)
             );
+
+        rectanglesView = new List<Rectangle>
+        {
+            new Rectangle(0, troopButtonY, fieldWidth, fieldHeight - troopButtonY)
+        };
 
         clickedTroopType = ClickedTroopButtonEnum.None;
     }
@@ -86,14 +96,14 @@ public class MainView : Game
     {
         foreach (var generalButton in generalButtons)
         {
-            generalButton.AddButtonEvent((sender, e) => 
+            generalButton.Click += (sender, e) => 
             {
                 generalButton.Text = "Start1";
-            });
+            };
         }
         foreach (var troopButton in troopButtons.Values)
         {
-            troopButton.AddButtonEvent((sender, e) =>
+            troopButton.Click += (sender, e) =>
             {
                 clickedTroopType = (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopButton.Text);
                 troopButton.IsChosen = true;
@@ -102,7 +112,7 @@ public class MainView : Game
                 {
                     previousTroopButton.IsChosen = previousTroopButton == troopButton;
                 }
-            });
+            };
         }
         foreach (var environmentElement in environmentView)
         {
@@ -180,12 +190,22 @@ public class MainView : Game
                     case ClickedTroopButtonEnum.Peasant:
                         var position = new Vector2(mouseState.X, mouseState.Y);
                         var sprite = troopsView[typeof(Peasant)].Sprite;
-                        return new Peasant(position, sprite.Width, sprite.Height);
+                        
+                        return new Peasant(
+                            new Vector2(
+                                position.X - sprite.Width / 2,
+                                position.Y - sprite.Height / 2
+                                ),
+                            sprite.Width,
+                            sprite.Height);
                     default:
                         return null;
                 }
             });
-
+        }
+        else if (mouseState.RightButton == ButtonState.Pressed)
+        {
+            field.RemoveTroop(mouseState.Position.ToVector2());
         }
 
         base.Update(gameTime);
@@ -195,7 +215,7 @@ public class MainView : Game
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
         foreach (var environmentView in environmentView)
         {
             environmentView.Draw(_spriteBatch);
@@ -205,7 +225,14 @@ public class MainView : Game
         foreach (var troop in field.Troops)
         {
             var viewType = troopsView[troop.GetType()];
+            var troopBehindMouse =
+                field.GetTroopByPosition(Mouse.GetState().Position.ToVector2());
+            viewType.SetColorForTroopUnderMouse(Color.Gray, troopBehindMouse);
             viewType.Draw(_spriteBatch, troop);
+        }
+        foreach (var rectangle in rectanglesView)
+        {
+            _spriteBatch.DrawRectangle(rectangle, Color.Black * 0.5f);
         }
         foreach (var text in textsView)
         {
@@ -263,6 +290,7 @@ public class MainView : Game
             field.CanPlaceTroop(mousePosition, currentTroopSprite.Width, currentTroopSprite.Height)
             ? Color.Green
             : Color.Red);
+        
     }
 
     private Rectangle GetUnderMouseRectangle(Vector2 mousePosition)
