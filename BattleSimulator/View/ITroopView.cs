@@ -9,15 +9,17 @@ using System.Threading.Tasks;
 
 namespace BattleSimulator.View;
 
-public interface ISpriteView
+public interface ITroopView
 {
     public string SpriteAssetName { get; }
     public Texture2D Sprite { get; }
 
-    public void Initialize(GraphicsDeviceManager graphics);
+    public void Initialize(
+        GraphicsDeviceManager graphics,
+        GameWindow gameWindow);
     public void LoadContent(Texture2D spriteTexture);
     public void Draw(
         SpriteBatch spriteBatch,
-        GameWindow gameWindow,
-        ITroop troop = null);
+        ITroop troop);
+    public void SetColorForTroopUnderMouse(Color color, ITroop troop);
 }
