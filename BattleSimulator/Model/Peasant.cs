@@ -37,13 +37,4 @@ internal class Peasant : ITroop
         Height = height;
     }
 
-    public void Move()
-    {
-        var keyboardState = Keyboard.GetState();
-
-        if (keyboardState.IsKeyDown(Keys.Up))
-        {
-            //
-        }
-    }
 }

@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BattleSimulator.Model;
+namespace BattleSimulator.View;
 
-internal class Player
+public enum ClickedTroopButtonEnum
 {
-    public int Money { get; set; }
+    None,
+    Peasant,
+    Boxer
 }

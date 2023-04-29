@@ -10,15 +10,17 @@ using System.Threading.Tasks;
 
 namespace BattleSimulator.View;
 
-internal class BackgroundView : ISpriteView
+internal class BackgroundView : IEnvironmentView
 {
     public string SpriteAssetName { get; } = "Grass_Sample";
-
     public Texture2D Sprite { get; private set; }
+
+    private GameWindow gameWindow;
     private Vector2 position;
 
-    public void Initialize(GraphicsDeviceManager graphics)
+    public void Initialize(GraphicsDeviceManager graphics, GameWindow gameWindow)
     {
+        this.gameWindow = gameWindow;
         position = new Vector2(
             graphics.PreferredBackBufferWidth / 2,
             graphics.PreferredBackBufferHeight / 2
@@ -30,7 +32,7 @@ internal class BackgroundView : ISpriteView
         Sprite = spriteTexture;
     }
 
-    public void Draw(SpriteBatch spriteBatch, GameWindow gameWindow, ITroop troop = null)
+    public void Draw(SpriteBatch spriteBatch)
     {
         var backgroundScale = new Vector2(
             Sprite.Width * (gameWindow.ClientBounds.Width / (gameWindow.ClientBounds.Width - Sprite.Width)),
