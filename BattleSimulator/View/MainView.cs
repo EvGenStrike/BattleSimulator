@@ -19,7 +19,6 @@ public class MainView : Game
 
     private readonly List<IEnvironmentView> environmentView;
     private readonly Dictionary<Type, ITroopView> troopsView;
-    private readonly List<ITroopView> troopsView1;
     private List<ITextView> textsView;
     private List<Rectangle> rectanglesView;
 
@@ -36,7 +35,7 @@ public class MainView : Game
         {
             PreferredBackBufferWidth = fieldWidth,
             PreferredBackBufferHeight = fieldHeight,
-            //IsFullScreen = true,
+            IsFullScreen = true,
         };
 
         Content.RootDirectory = "Content";
@@ -58,7 +57,6 @@ public class MainView : Game
         {
             { typeof(Peasant), new PeasantView() },
         };
-        troopsView1 = new List<ITroopView>();
 
         generalButtons = new List<Button>
         {

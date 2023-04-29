@@ -49,6 +49,7 @@ internal class Field
             return;
         this.addTroopEvent += addTroopEvent;
         AddTroop();
+        
     }
 
     private void AddTroop()
