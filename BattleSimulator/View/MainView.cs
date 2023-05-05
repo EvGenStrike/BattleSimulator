@@ -36,7 +36,7 @@ public class MainView : Game
         {
             PreferredBackBufferWidth = fieldWidth,
             PreferredBackBufferHeight = fieldHeight,
-            //IsFullScreen = true,
+            IsFullScreen = true,
         };
 
         Content.RootDirectory = "Content";
@@ -119,7 +119,7 @@ public class MainView : Game
             {
                 generalButton.Text = "Game started";
                 field.ChangeGameState(GameStateEnum.Started);
-                field.BeginGame();
+                field.PlayGame();
             };
         }
         foreach (var troopButton in troopButtons.Values)
@@ -292,7 +292,7 @@ public class MainView : Game
                 var viewType = troopsView[troop.GetType()];
                 viewType.Draw(_spriteBatch, troop);
             }
-            field.BeginGame();
+            field.PlayGame();
         }
         foreach (var text in textsView)
         {

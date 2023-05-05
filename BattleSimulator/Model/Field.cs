@@ -13,8 +13,6 @@ namespace BattleSimulator.Model;
 
 internal class Field
 {
-    public double Angle;
-
     public List<ITroop> Troops { get; }
     public List<ITroop> EnemyTroops { get; }
     public List<ITroop> AllyTroops { get; }
@@ -25,7 +23,7 @@ internal class Field
     public int FieldHeight { get; }
     public GameStateEnum GameState { get; private set; }
 
-    private List<Rectangle> TroopsCollisions { get; set; }
+    private Dictionary<ITroop, Rectangle> TroopsCollisions { get; set; }
 
     public event Func<ITroop> addTroopEvent;
     private event Action<Vector2> removeTroopEvent;
@@ -70,7 +68,7 @@ internal class Field
         AllyTroops.Add(troop);
         if (troop.Team == TeamEnum.Red)
             Money -= troop.Cost;
-        TroopsCollisions.Add(new Rectangle(
+        TroopsCollisions.Add(troop, new Rectangle(
             (int)troop.InitialPosition.X, 
             (int)troop.InitialPosition.Y, 
             troop.Width, 
@@ -98,7 +96,7 @@ internal class Field
             (int)troop.InitialPosition.Y,
             troop.Width,
             troop.Height);
-        foreach (var previousTroop in TroopsCollisions)
+        foreach (var previousTroop in TroopsCollisions.Values)
         {
             if (troopRectangle.Intersects(previousTroop))
                 return true;
@@ -111,7 +109,7 @@ internal class Field
         var middleWidthLength = troop.Width / 2;
         var middleHeightLength = troop.Height / 2;
 
-        if (AcceptableArea != default)
+        if (AcceptableArea != default(Rectangle))
             return ((troop.InitialPosition.X) >= AcceptableArea.X
                 && (troop.InitialPosition.Y) >= AcceptableArea.Y
                 && (troop.InitialPosition.X + troop.Width) <= (AcceptableArea.X + AcceptableArea.Width)
@@ -149,15 +147,15 @@ internal class Field
         var i = GetTroopIndexByPosition(position);
         if (i == -1) return;
         Money += Troops[i].Cost;
+        TroopsCollisions.Remove(Troops[i]);
         Troops.RemoveAt(i);
-        TroopsCollisions.RemoveAt(i);
     }
 
     public ITroop GetTroopByPosition(Vector2 position)
     {
         for (var i = 0; i < TroopsCollisions.Count; i++)
         {
-            if (TroopsCollisions[i].Contains(position))
+            if (TroopsCollisions[Troops[i]].Contains(position))
             {
                 return Troops[i];
             }
@@ -170,7 +168,7 @@ internal class Field
     {
         for (var i = 0; i < TroopsCollisions.Count; i++)
         {
-            if (TroopsCollisions[i].Contains(position))
+            if (TroopsCollisions[Troops[i]].Contains(position))
             {
                 return i;
             }
@@ -185,28 +183,30 @@ internal class Field
     }
 
 
-    private void GenerateEnemyTroopsCollisions()
-    {
-        foreach (var enemyTroop in EnemyTroops)
-        {
-            TroopsCollisions.Add(new Rectangle(
-            (int)enemyTroop.InitialPosition.X,
-            (int)enemyTroop.InitialPosition.Y,
-            enemyTroop.Width,
-            enemyTroop.Height));
-        }
-    }
-
-    public void BeginGame()
+    private void GenerateTroopsCollisions()
     {
         TroopsCollisions.Clear();
         foreach (var troop in Troops)
         {
+            TroopsCollisions.Add(troop, new Rectangle(
+            (int)troop.CurrentPosition.X,
+            (int)troop.CurrentPosition.Y,
+            troop.Width,
+            troop.Height));
+        }
+    }
+
+    public void PlayGame()
+    {
+        GenerateTroopsCollisions();
+        foreach (var troop in Troops)
+        {
             var closestEnemy = GetClosestEnemyTroop(troop);
             if (closestEnemy is null) continue;
+            if (TroopsCollisions[troop].Intersects(TroopsCollisions[closestEnemy]))
+                continue;
             var angle = GetAngleBetweenVectors(troop.CurrentPosition, closestEnemy.CurrentPosition);
             troop.Move((float)angle);
-            Angle = angle;
         }
     }
 
@@ -248,5 +248,4 @@ internal class Field
     {
         return Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y);
     }
-
 }
