@@ -11,6 +11,7 @@ namespace BattleSimulator.Model;
 
 internal class Peasant : ITroop
 {
+    public TeamEnum Team { get; }
     public int Health { get; }
     public int Damage { get; }
     public int MoveSpeed { get; }
@@ -22,8 +23,9 @@ internal class Peasant : ITroop
     public int Width { get; }
     public int Height { get; }
 
-    public Peasant(Vector2 initialPosition, int width, int height)
+    public Peasant(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
     {
+        Team = team;
         Health = 50;
         Damage = 25;
         MoveSpeed = 3;
@@ -35,6 +37,19 @@ internal class Peasant : ITroop
         CurrentPosition = InitialPosition;
         Width = width;
         Height = height;
+    }
+
+    public void Move(float angle)
+    {
+        CurrentPosition
+            = new Vector2(
+                CurrentPosition.X + (float)Math.Cos(angle) * MoveSpeed,
+                CurrentPosition.Y + (float)Math.Sin(angle) * MoveSpeed);
+    }
+
+    public ITroop OverrideTroop(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
+    {
+        return new Peasant(team, initialPosition, width, height);
     }
 
 }

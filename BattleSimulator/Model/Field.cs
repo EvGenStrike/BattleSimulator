@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,34 +14,38 @@ namespace BattleSimulator.Model;
 internal class Field
 {
     public List<ITroop> Troops { get; }
+    public List<ITroop> EnemyTroops { get; }
+    public List<ITroop> AllyTroops { get; }
     public Rectangle AcceptableArea { get; private set; }
     public Rectangle LineSeparator { get; }
     public int Money { get; private set; }
     public int FieldWidth { get; }
     public int FieldHeight { get; }
+    public GameStateEnum GameState { get; private set; }
 
-    private List<Rectangle> TroopsCollisions { get; set; }
+    private Dictionary<ITroop, Rectangle> TroopsCollisions { get; set; }
 
     public event Func<ITroop> addTroopEvent;
     private event Action<Vector2> removeTroopEvent;
 
-    public Field(int fieldWIdth, int fieldHeight)
+    public Field(
+        int fieldWIdth,
+        int fieldHeight,
+        Rectangle lineSeparator,
+        Rectangle acceptableArea,
+        List<ITroop> enemyTroops,
+        int money)
     {
         Troops = new();
+        AllyTroops = new();
+        EnemyTroops = enemyTroops;
         TroopsCollisions = new();
-        Money = 10000;
+        Money = money;
         FieldWidth = fieldWIdth;
         FieldHeight = fieldHeight;
-        LineSeparator = GenerateLineSeparator();    
-    }
-
-    public Rectangle GenerateLineSeparator()
-    {
-        var width = FieldWidth / 100;
-        var height = FieldHeight;
-        var x = (FieldWidth / 2) - width / 2;
-        var y = 0;
-        return new Rectangle(x, y, width, height);
+        GameState = GameStateEnum.ArrangingTroops;
+        LineSeparator = lineSeparator;
+        AcceptableArea = acceptableArea;    
     }
 
     public void AddTroopEvent(Func<ITroop> addTroopEvent)
@@ -48,19 +53,22 @@ internal class Field
         if (addTroopEvent() == null)
             return;
         this.addTroopEvent += addTroopEvent;
-        AddTroop();
-        
+        AddTroop();   
     }
 
     private void AddTroop()
     {
         var troop = addTroopEvent();
         addTroopEvent = null;
-        if (!CanPlaceTroop(troop))
+        if (troop.Team == TeamEnum.Red && !CanPlaceTroop(troop))
+            return;
+        if (troop.Team == TeamEnum.Blue && !CanPlaceEnemyTroop(troop))
             return;
         Troops.Add(troop); 
-        Money -= troop.Cost;
-        TroopsCollisions.Add(new Rectangle(
+        AllyTroops.Add(troop);
+        if (troop.Team == TeamEnum.Red)
+            Money -= troop.Cost;
+        TroopsCollisions.Add(troop, new Rectangle(
             (int)troop.InitialPosition.X, 
             (int)troop.InitialPosition.Y, 
             troop.Width, 
@@ -71,9 +79,15 @@ internal class Field
     {
         return troop.Cost <= Money
             && !CausesCollision(troop)
-            && IsTroopWithinBorders(troop);
+            && IsTroopWithinBorders(troop)
+            && GameState == GameStateEnum.ArrangingTroops;
     }
 
+    private bool CanPlaceEnemyTroop(ITroop troop)
+    {
+        return !CausesCollision(troop)
+            && !IsTroopWithinBorders(troop);
+    }
 
     private bool CausesCollision(ITroop troop)
     {
@@ -82,7 +96,7 @@ internal class Field
             (int)troop.InitialPosition.Y,
             troop.Width,
             troop.Height);
-        foreach (var previousTroop in TroopsCollisions)
+        foreach (var previousTroop in TroopsCollisions.Values)
         {
             if (troopRectangle.Intersects(previousTroop))
                 return true;
@@ -95,7 +109,7 @@ internal class Field
         var middleWidthLength = troop.Width / 2;
         var middleHeightLength = troop.Height / 2;
 
-        if (AcceptableArea != default)
+        if (AcceptableArea != default(Rectangle))
             return ((troop.InitialPosition.X) >= AcceptableArea.X
                 && (troop.InitialPosition.Y) >= AcceptableArea.Y
                 && (troop.InitialPosition.X + troop.Width) <= (AcceptableArea.X + AcceptableArea.Width)
@@ -112,6 +126,7 @@ internal class Field
         int height)
     {
         return CanPlaceTroop(new Peasant(
+            TeamEnum.Red,
             new Vector2(
                 mousePosition.X - width / 2,
                 mousePosition.Y - height / 2
@@ -132,15 +147,15 @@ internal class Field
         var i = GetTroopIndexByPosition(position);
         if (i == -1) return;
         Money += Troops[i].Cost;
+        TroopsCollisions.Remove(Troops[i]);
         Troops.RemoveAt(i);
-        TroopsCollisions.RemoveAt(i);
     }
 
     public ITroop GetTroopByPosition(Vector2 position)
     {
         for (var i = 0; i < TroopsCollisions.Count; i++)
         {
-            if (TroopsCollisions[i].Contains(position))
+            if (TroopsCollisions[Troops[i]].Contains(position))
             {
                 return Troops[i];
             }
@@ -153,7 +168,7 @@ internal class Field
     {
         for (var i = 0; i < TroopsCollisions.Count; i++)
         {
-            if (TroopsCollisions[i].Contains(position))
+            if (TroopsCollisions[Troops[i]].Contains(position))
             {
                 return i;
             }
@@ -162,13 +177,75 @@ internal class Field
         return -1;
     }
 
-    public void GetTroops()
+    public void ChangeGameState(GameStateEnum gameState)
     {
-        throw new NotImplementedException();
+        GameState = gameState;
     }
 
-    public void AddAcceptableArea(Rectangle accebtableArea)
+
+    private void GenerateTroopsCollisions()
     {
-        AcceptableArea = accebtableArea;
+        TroopsCollisions.Clear();
+        foreach (var troop in Troops)
+        {
+            TroopsCollisions.Add(troop, new Rectangle(
+            (int)troop.CurrentPosition.X,
+            (int)troop.CurrentPosition.Y,
+            troop.Width,
+            troop.Height));
+        }
+    }
+
+    public void PlayGame()
+    {
+        GenerateTroopsCollisions();
+        foreach (var troop in Troops)
+        {
+            var closestEnemy = GetClosestEnemyTroop(troop);
+            if (closestEnemy is null) continue;
+            if (TroopsCollisions[troop].Intersects(TroopsCollisions[closestEnemy]))
+                continue;
+            var angle = GetAngleBetweenVectors(troop.CurrentPosition, closestEnemy.CurrentPosition);
+            troop.Move((float)angle);
+        }
+    }
+
+    private ITroop GetClosestEnemyTroop(ITroop troop)
+    {
+        var minDistance = double.MaxValue;
+        var closestTroop = default(ITroop);
+        foreach (var otherTroop in Troops)
+        {
+            if (otherTroop.Team != troop.Team)
+            {
+                var distance =
+                    GetDistanceBetweenVectors(otherTroop.CurrentPosition, troop.CurrentPosition);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestTroop = otherTroop;
+                }
+            }
+        }
+
+        return closestTroop;
+    }
+
+    private double GetDistanceBetweenVectors(Vector2 vector1, Vector2 vector2)
+    {
+        var dx = vector1.X - vector2.X;
+        var dy = vector1.Y - vector2.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    private double GetAngleBetweenVectors(Vector2 vector1, Vector2 vector2)
+    {
+        var angle = Math.Atan2(vector2.Y - vector1.Y, vector2.X - vector1.X);
+        return angle;
+    }
+
+    private double GetVectorLength(Vector2 vector)
+    {
+        return Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y);
     }
 }

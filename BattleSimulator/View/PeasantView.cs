@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using BattleSimulator.Model;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace BattleSimulator.View;
 
@@ -29,9 +31,13 @@ internal class PeasantView : ITroopView
     {
         var color = default(Color);
         if (!TroopColors.ContainsKey(troop))
-            color = Color.White;
+        {
+            color = GetTeamColor(troop.Team);
+        }
         else
+        {
             color = TroopColors[troop];
+        }
 
         spriteBatch.Draw(
                 Sprite,
@@ -49,13 +55,26 @@ internal class PeasantView : ITroopView
 
     public void SetColorForTroopUnderMouse(Color color, ITroop troop)
     {
-        if (troop != null)
+        if (troop != null)      
             TroopColors[troop] = color;
         foreach (var troopColor in TroopColors)
         {
             TroopColors[troopColor.Key] = troopColor.Key == troop
                 ? color
-                : Color.White;
+                : GetTeamColor(troopColor.Key.Team);
+        }
+    }
+
+    private Color GetTeamColor(TeamEnum team)
+    {
+        switch (team)
+        {
+            case TeamEnum.Red:
+                return Color.Red;
+            case TeamEnum.Blue:
+                return Color.Blue;
+            default:
+                return Color.White;
         }
     }
 
