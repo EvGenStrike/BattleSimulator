@@ -47,6 +47,11 @@ internal class Peasant : ITroop
                 CurrentPosition.Y + (float)Math.Sin(angle) * MoveSpeed);
     }
 
+    public void AttackEnemy(ITroop enemy)
+    {
+
+    }
+
     public ITroop OverrideTroop(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
     {
         return new Peasant(team, initialPosition, width, height);

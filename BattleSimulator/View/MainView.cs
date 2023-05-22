@@ -99,6 +99,19 @@ public class MainView : Game
                     new Peasant(TeamEnum.Blue, new Vector2(1100, 800)),
                 },
                 10000
+            ),
+
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Peasant(TeamEnum.Blue, new Vector2(1300, 600)),
+                },
+                1000
             )
         };
 
@@ -117,7 +130,6 @@ public class MainView : Game
         {
             generalButton.Click += (sender, e) => 
             {
-                generalButton.Text = "Game started";
                 field.ChangeGameState(GameStateEnum.Started);
                 field.PlayGame();
             };
@@ -244,9 +256,13 @@ public class MainView : Game
 
         var keyboardState = Keyboard.GetState();
         if (keyboardState.IsKeyDown(Keys.H))
-            field = levels[0];
+        {
+            ChangeLevelTo(0);
+        }
         else if (keyboardState.IsKeyDown(Keys.J))
-            field = levels[1];
+        {
+            ChangeLevelTo(1);
+        }
 
         base.Update(gameTime);
     }
@@ -284,6 +300,16 @@ public class MainView : Game
             {
                 troopButton.Draw(gameTime, _spriteBatch);
             }
+            foreach (var text in textsView)
+            {
+                var money = string.Empty;
+
+                var textType = text.GetType();
+                if (textType == typeof(MoneyTextView))
+                    money = field.Money.ToString();
+
+                text.Draw(_spriteBatch, Window, money);
+            }
         }
         if (field.GameState == GameStateEnum.Started)
         {
@@ -294,20 +320,19 @@ public class MainView : Game
             }
             field.PlayGame();
         }
-        foreach (var text in textsView)
-        {
-            var money = string.Empty;
-
-            var textType = text.GetType();
-            if (textType == typeof(MoneyTextView))
-                money = field.Money.ToString();
-
-            text.Draw(_spriteBatch, Window, money);
-        }
         
         _spriteBatch.End();
 
         base.Draw(gameTime);
+    }
+
+    public Rectangle GenerateLineSeparator()
+    {
+        var width = fieldWidth / 100;
+        var height = fieldHeight;
+        var x = (fieldWidth / 2) - width / 2;
+        var y = 0;
+        return new Rectangle(x, y, width, height);
     }
 
     private Dictionary<ClickedTroopButtonEnum, Button> GenerateTroopsButtons()
@@ -356,13 +381,12 @@ public class MainView : Game
             );
     }
 
-    public Rectangle GenerateLineSeparator()
+    private void ChangeLevelTo(int id)
     {
-        var width = fieldWidth / 100;
-        var height = fieldHeight;
-        var x = (fieldWidth / 2) - width / 2;
-        var y = 0;
-        return new Rectangle(x, y, width, height);
+        if (field.GameState == GameStateEnum.ArrangingTroops)
+        {
+            field = levels[id];
+            areEnemyTroopsDrawenOnTheStart = false;
+        }
     }
-
 }
