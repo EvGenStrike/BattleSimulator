@@ -214,7 +214,8 @@ internal class Field
             if (troop.Health <= 0) Troops.Remove(troop);
             var closestEnemy = GetClosestEnemyTroop(troop);
             if (closestEnemy is null) continue;
-            if (TroopsCollisions[troop].Intersects(TroopsCollisions[closestEnemy]))
+            //if (TroopsCollisions[troop].Intersects(TroopsCollisions[closestEnemy]))
+            if (GetDistanceBetweenVectors(troop.CurrentPosition, closestEnemy.CurrentPosition) <= troop.AttackDistance)
             {
                 if (troop.TryAttackEnemy(closestEnemy, gameTime))
                     TroopSuccessfulAttack?.Invoke(
