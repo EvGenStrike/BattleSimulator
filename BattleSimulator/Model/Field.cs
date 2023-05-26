@@ -22,8 +22,6 @@ internal class Field
     public int FieldWidth { get; }
     public int FieldHeight { get; }
     public GameStateEnum GameState { get; private set; }
-    public GameTime _GameTime { get; set; }
-    private float SpentTime { get; set; }
 
     private Dictionary<ITroop, Rectangle> TroopsCollisions { get; set; }
 
@@ -157,6 +155,7 @@ internal class Field
     {
         var i = GetTroopIndexByPosition(position);
         if (i == -1) return;
+        if (Troops[i].Team != TeamEnum.Red) return;
         Money += Troops[i].Cost;
         TroopsCollisions.Remove(Troops[i]);
         Troops.RemoveAt(i);
@@ -240,7 +239,10 @@ internal class Field
         TroopsCollisions = TroopsCollisions
             .Where(x => x.Key.Team == TeamEnum.Blue)
             .ToDictionary(x => x.Key, c => c.Value);
+        Troops.Clear();
+        TroopsCollisions.Clear();
         Money = StartMoney;
+        ChangeGameState(GameStateEnum.ArrangingTroops);
     }
 
     private ITroop GetClosestEnemyTroop(ITroop troop)

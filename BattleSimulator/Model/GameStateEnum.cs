@@ -8,7 +8,9 @@ namespace BattleSimulator.Model;
 
 public enum GameStateEnum
 {
+    None,
     ArrangingTroops,
     Started,
-    Finished
+    Finished,
+    Paused
 }

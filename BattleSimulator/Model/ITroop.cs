@@ -20,8 +20,6 @@ public interface ITroop
     public Vector2 CurrentPosition { get; }
     public int Width { get; }
     public int Height { get; }
-    public GameTime CurrentGameTime { get; set; }
-
     public ITroop OverrideTroop(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0, GameTime gameTime = null);
     public void Move(float angle, GameTime gameTime);
     public bool TryAttackEnemy(ITroop troop, GameTime gameTime);
