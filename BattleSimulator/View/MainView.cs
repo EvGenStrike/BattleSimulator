@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static BattleSimulator.Model.Field;
 
 namespace BattleSimulator.View;
 
@@ -12,6 +13,7 @@ public class MainView : Game
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+    private GameTime _gameTime;
 
     private List<Field> levels;
     private Field field;
@@ -59,25 +61,31 @@ public class MainView : Game
             { typeof(Peasant), new PeasantView() },
         };
 
+
         generalButtons = new List<Button>
         {
             new Button(
-                new Vector2(fieldWidth / 2, 0),
+                new Vector2(fieldWidth / 2 - (fieldWidth / 20), 0),
                 "Start",
                 Color.Black,
                 fieldWidth / 10,
                 fieldHeight / 10)
         };
-
         troopButtons = GenerateTroopsButtons();
         var troopButtonY = (int)troopButtons.FirstOrDefault().Value.Position.Y;
+
+        rectanglesView = new List<Rectangle>
+        {
+            new Rectangle(0, troopButtonY, fieldWidth, fieldHeight - troopButtonY),
+            new Rectangle(0, 0, fieldWidth, generalButtons[0].Height),
+        };
 
         var middleLineSeparator = GenerateLineSeparator();
         var leftAcceptableArea = new Rectangle(
             0,
-            0,
+            rectanglesView[1].Height,
             middleLineSeparator.X,
-            troopButtonY);
+            troopButtonY - rectanglesView[1].Height);
         levels = new List<Field>
         {
             new Field
@@ -89,16 +97,11 @@ public class MainView : Game
                 new List<ITroop>
                 {
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 600)),
-                    new Peasant(TeamEnum.Blue, new Vector2(1250, 100)),
-                    new Peasant(TeamEnum.Blue, new Vector2(1500, 500)),
-                    new Peasant(TeamEnum.Blue, new Vector2(1600, 400)),
-                    new Peasant(TeamEnum.Blue, new Vector2(1100, 200)),
-                    new Peasant(TeamEnum.Blue, new Vector2(1000, 700)),
-                    new Peasant(TeamEnum.Blue, new Vector2(1400, 800)),
-                    new Peasant(TeamEnum.Blue, new Vector2(1500, 650)),
-                    new Peasant(TeamEnum.Blue, new Vector2(1100, 800)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 450)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 330)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1250, 210)),
                 },
-                10000
+                250
             ),
 
             new Field
@@ -116,22 +119,50 @@ public class MainView : Game
         };
 
         field = levels[0];
-        rectanglesView = new List<Rectangle>
-        {
-            new Rectangle(0, troopButtonY, fieldWidth, fieldHeight - troopButtonY)
-        };
 
         clickedTroopType = ClickedTroopButtonEnum.None;
+        field.TroopSuccessfulAttack += FieldEventTroopSuccessfulAttack;
+        field.TroopFailedAttack += FieldEventTroopFailedAttack;
+    }
+
+    //Вызовет после атаки юнита
+    private void FieldEventTroopSuccessfulAttack(object sender, TroopAttackHandler args)
+    {
+        //потом заменю на анимацию
+        //if (args.SuccessfullAttack)
+        //{
+        //    var troopsGeneralView = this.troopsView[typeof(Peasant)];
+        //    var troopViewData = troopsGeneralView.TroopsData[args.troop];
+        //    if (troopViewData.SpentTime < 0.5f)
+        //    {
+        //        troopsGeneralView.SetColor(args.troop, Color.White);
+        //        troopViewData.SpentTime
+        //            += (float)args.gameTime.ElapsedGameTime.TotalSeconds;
+        //    }
+        //    else
+        //    {
+        //        troopViewData.SpentTime = 0;
+        //        troopsGeneralView.SetColor(
+        //            args.troop, troopsGeneralView.GetTeamColor(args.troop.Team)
+        //            );
+        //        args.SuccessfullAttack = false;
+        //    }
+        //}
+    }
+
+    private void FieldEventTroopFailedAttack(object sender, ITroop troop)
+    {
+        var troopsView = this.troopsView[typeof(Peasant)];
+        troopsView.SetColor(troop, troopsView.GetTeamColor(troop.Team));
     }
 
     protected override void Initialize()
     {
         foreach (var generalButton in generalButtons)
         {
-            generalButton.Click += (sender, e) => 
+            generalButton.Click += (sender, e) =>
             {
                 field.ChangeGameState(GameStateEnum.Started);
-                field.PlayGame();
             };
         }
         foreach (var troopButton in troopButtons.Values)
@@ -140,7 +171,7 @@ public class MainView : Game
             {
                 clickedTroopType = (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopButton.Text);
                 troopButton.IsChosen = true;
-                            
+
                 foreach (var previousTroopButton in troopButtons.Values)
                 {
                     previousTroopButton.IsChosen = previousTroopButton == troopButton;
@@ -198,22 +229,37 @@ public class MainView : Game
     }
 
     bool areEnemyTroopsDrawenOnTheStart;
+    bool gamePaused = false;
+    KeyboardState currentKB, previousKB;
     protected override void Update(GameTime gameTime)
     {
+        previousKB = currentKB;
+        currentKB = Keyboard.GetState();
+
+        if (currentKB.IsKeyDown(Keys.Escape)) Exit();
+        if (currentKB.IsKeyUp(Keys.P) && previousKB.IsKeyDown(Keys.P)) gamePaused = !gamePaused;
+
+        if (gamePaused) return;
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
-        
+        _gameTime = gameTime;
+        foreach (var level in levels)
+        {
+            level._GameTime = gameTime;
+        }
         if (!areEnemyTroopsDrawenOnTheStart)
         {
             foreach (var enemyTroop in field.EnemyTroops)
             {
-                var sprite = troopsView[typeof(Peasant)].Sprite;
+                var troopView = troopsView[typeof(Peasant)];
+                var sprite = troopView.Sprite;
                 var troop = enemyTroop.OverrideTroop(
-                            enemyTroop.Team, enemyTroop.InitialPosition, sprite.Width, sprite.Height);
+                            enemyTroop.Team, enemyTroop.InitialPosition, sprite.Width, sprite.Height, gameTime);
                 field.AddTroopEvent(() => troop);
             }
             areEnemyTroopsDrawenOnTheStart = true;
         }
+
         foreach (var generalButton in generalButtons)
         {
             generalButton.Update(gameTime);
@@ -235,15 +281,17 @@ public class MainView : Game
                     case ClickedTroopButtonEnum.Peasant:
                         var position = new Vector2(mouseState.X, mouseState.Y);
                         var sprite = troopsView[typeof(Peasant)].Sprite;
-                        
-                        return new Peasant(
+
+                        var troop = new Peasant(
                             TeamEnum.Red,
                             new Vector2(
                                 position.X - sprite.Width / 2,
                                 position.Y - sprite.Height / 2
                                 ),
                             sprite.Width,
-                            sprite.Height);
+                            sprite.Height,
+                            gameTime);
+                        return troop;
                     default:
                         return null;
                 }
@@ -262,6 +310,11 @@ public class MainView : Game
         else if (keyboardState.IsKeyDown(Keys.J))
         {
             ChangeLevelTo(1);
+        }
+
+        if (field.GameState == GameStateEnum.Started)
+        {
+            field.PlayGame(gameTime);
         }
 
         base.Update(gameTime);
@@ -311,6 +364,7 @@ public class MainView : Game
                 text.Draw(_spriteBatch, Window, money);
             }
         }
+
         if (field.GameState == GameStateEnum.Started)
         {
             foreach (var troop in field.Troops)
@@ -318,9 +372,8 @@ public class MainView : Game
                 var viewType = troopsView[troop.GetType()];
                 viewType.Draw(_spriteBatch, troop);
             }
-            field.PlayGame();
         }
-        
+
         _spriteBatch.End();
 
         base.Draw(gameTime);
@@ -361,7 +414,7 @@ public class MainView : Game
         var mousePosition = Mouse.GetState().Position.ToVector2();
         var troopType = Type.GetType($"BattleSimulator.Model.{clickedTroopType}");
         var currentTroopSprite = troopsView[troopType].Sprite;
-        var underMouseRectangle = GetUnderMouseRectangle(mousePosition, currentTroopSprite);        
+        var underMouseRectangle = GetUnderMouseRectangle(mousePosition, currentTroopSprite);
         _spriteBatch.DrawRectangle(
             underMouseRectangle,
             field.CanPlaceTroop(mousePosition, currentTroopSprite.Width, currentTroopSprite.Height)
@@ -387,6 +440,7 @@ public class MainView : Game
         {
             field = levels[id];
             areEnemyTroopsDrawenOnTheStart = false;
+            field.ResetField();
         }
     }
 }

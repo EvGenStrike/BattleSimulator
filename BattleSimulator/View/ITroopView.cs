@@ -13,6 +13,7 @@ public interface ITroopView
 {
     public string SpriteAssetName { get; }
     public Texture2D Sprite { get; }
+    public Dictionary<ITroop, PeasantViewData> TroopsData { get; }
 
     public void Initialize(
         GraphicsDeviceManager graphics,
@@ -22,4 +23,6 @@ public interface ITroopView
         SpriteBatch spriteBatch,
         ITroop troop);
     public void SetColorForTroopUnderMouse(Color color, ITroop troop);
+    public void SetColor(ITroop troop, Color color);
+    public Color GetTeamColor(TeamEnum team);
 }

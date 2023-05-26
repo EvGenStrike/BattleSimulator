@@ -13,19 +13,31 @@ namespace BattleSimulator.Model;
 
 internal class Field
 {
-    public List<ITroop> Troops { get; }
+    public List<ITroop> Troops { get; private set; }
     public List<ITroop> EnemyTroops { get; }
-    public List<ITroop> AllyTroops { get; }
     public Rectangle AcceptableArea { get; private set; }
     public Rectangle LineSeparator { get; }
     public int Money { get; private set; }
+    public int StartMoney { get; private set; }
     public int FieldWidth { get; }
     public int FieldHeight { get; }
     public GameStateEnum GameState { get; private set; }
+    public GameTime _GameTime { get; set; }
+    private float SpentTime { get; set; }
 
     private Dictionary<ITroop, Rectangle> TroopsCollisions { get; set; }
 
     public event Func<ITroop> addTroopEvent;
+    public event EventHandler<TroopAttackHandler> TroopSuccessfulAttack;
+
+    public class TroopAttackHandler
+    {
+        public ITroop troop { get; set; }
+        public GameTime gameTime { get; set; }
+        public bool SuccessfullAttack { get; set; }
+    }
+
+    public event EventHandler<ITroop> TroopFailedAttack;
     private event Action<Vector2> removeTroopEvent;
 
     public Field(
@@ -37,15 +49,15 @@ internal class Field
         int money)
     {
         Troops = new();
-        AllyTroops = new();
         EnemyTroops = enemyTroops;
         TroopsCollisions = new();
         Money = money;
+        StartMoney = money;
         FieldWidth = fieldWIdth;
         FieldHeight = fieldHeight;
         GameState = GameStateEnum.ArrangingTroops;
         LineSeparator = lineSeparator;
-        AcceptableArea = acceptableArea;    
+        AcceptableArea = acceptableArea;
     }
 
     public void AddTroopEvent(Func<ITroop> addTroopEvent)
@@ -65,7 +77,6 @@ internal class Field
         if (troop.Team == TeamEnum.Blue && !CanPlaceEnemyTroop(troop))
             return;
         Troops.Add(troop); 
-        AllyTroops.Add(troop);
         if (troop.Team == TeamEnum.Red)
             Money -= troop.Cost;
         TroopsCollisions.Add(troop, new Rectangle(
@@ -196,18 +207,40 @@ internal class Field
         }
     }
 
-    public void PlayGame()
+    public void PlayGame(GameTime gameTime)
     {
         GenerateTroopsCollisions();
-        foreach (var troop in Troops)
+        foreach (var troop in Troops.ToList())
         {
+            if (troop.Health <= 0) Troops.Remove(troop);
             var closestEnemy = GetClosestEnemyTroop(troop);
             if (closestEnemy is null) continue;
             if (TroopsCollisions[troop].Intersects(TroopsCollisions[closestEnemy]))
+            {
+                if (troop.TryAttackEnemy(closestEnemy, gameTime))
+                    TroopSuccessfulAttack?.Invoke(
+                        this,
+                        new TroopAttackHandler
+                            {
+                            troop=troop,
+                            gameTime = gameTime,
+                            SuccessfullAttack = true
+                            }
+                        );
+                
                 continue;
+            }
             var angle = GetAngleBetweenVectors(troop.CurrentPosition, closestEnemy.CurrentPosition);
-            troop.Move((float)angle);
+            troop.Move((float)angle, gameTime);
         }
+    }
+    public void ResetField()
+    {
+        Troops = Troops.Where(x => x.Team == TeamEnum.Blue).ToList();
+        TroopsCollisions = TroopsCollisions
+            .Where(x => x.Key.Team == TeamEnum.Blue)
+            .ToDictionary(x => x.Key, c => c.Value);
+        Money = StartMoney;
     }
 
     private ITroop GetClosestEnemyTroop(ITroop troop)
@@ -244,8 +277,5 @@ internal class Field
         return angle;
     }
 
-    private double GetVectorLength(Vector2 vector)
-    {
-        return Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y);
-    }
 }
+
