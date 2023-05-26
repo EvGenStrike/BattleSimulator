@@ -48,7 +48,7 @@ internal class Peasant : ITroop
         Damage = 20 + random.Next(3) - 1;
         MoveSpeed = 12 + random.Next(3) - 1;
         AttackSpeed = 2;
-        AttackDistance = 3;
+        AttackDistance = 80;
         Cost = 50;
     }
 

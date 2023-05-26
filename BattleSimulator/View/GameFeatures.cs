@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BattleSimulator.Model;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace BattleSimulator.View;
 public class GameFeatures
 {
     public bool IsGamePaused {get; set;}
-    public EventHandler escPress;
+    public EventHandler<GameStateEnum> escPress;
 
     private Game _Game;
 
@@ -26,8 +27,9 @@ public class GameFeatures
         previousKB = currentKB;
         currentKB = Keyboard.GetState();
 
-        if (currentKB.IsKeyDown(Keys.Escape)) escPress?.Invoke(this, new EventArgs());
-        if (currentKB.IsKeyUp(Keys.P) && previousKB.IsKeyDown(Keys.P))
+
+        if ((currentKB.IsKeyUp(Keys.P) && previousKB.IsKeyDown(Keys.P))
+            || (currentKB.IsKeyUp(Keys.Escape) && previousKB.IsKeyDown(Keys.Escape)))
         {
             IsGamePaused = !IsGamePaused;
         }
@@ -35,8 +37,15 @@ public class GameFeatures
         return IsGamePaused;
     }
 
-    public void OnEscPressed(object sender, EventArgs eventArgs)
+    public void OnEscPressed(object sender, GameStateEnum gameState)
     {
-        _Game.Exit();
+        if (gameState == GameStateEnum.Paused)
+        {
+            //_Game.Exit();
+        }
+        else
+        {
+            IsGamePaused = true;
+        }
     }
 }
