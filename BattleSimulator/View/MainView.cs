@@ -11,20 +11,21 @@ namespace BattleSimulator.View;
 
 public class MainView : Game
 {
-    public GameFeatures _gameFeatures;
-    private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
+    public GameFeatures _gameFeatures { get; private set; }
+    public GraphicsDeviceManager _graphics { get; private set; }
+    public SpriteBatch _spriteBatch { get; private set; }
 
-    private List<Field> levels;
-    private Field field;
-    private readonly int fieldWidth;
-    private readonly int fieldHeight;
+    public List<Field> Levels { get; private set; }
+    public Field currentField { get; private set; }
+    public readonly int fieldWidth;
+    public readonly int fieldHeight;
 
     private readonly List<IEnvironmentView> environmentView;
     private readonly Dictionary<Type, ITroopView> troopsView;
     private List<ITextView> textsView;
     private List<Rectangle> rectanglesView;
     private PauseMenu pauseMenu;
+    private WinMenu winMenu;
 
     private List<Button> generalButtons;
     private Dictionary<ClickedTroopButtonEnum, Button> troopButtons;
@@ -39,7 +40,7 @@ public class MainView : Game
         {
             PreferredBackBufferWidth = fieldWidth,
             PreferredBackBufferHeight = fieldHeight,
-            IsFullScreen = true,
+            //IsFullScreen = true,
         };
         _gameFeatures = new((Game)this);
 
@@ -82,7 +83,8 @@ public class MainView : Game
             new Rectangle(0, 0, fieldWidth, generalButtons[0].Height),
         };
 
-        pauseMenu = new(this, fieldWidth, fieldHeight);
+        pauseMenu = new(this);
+        winMenu = new(this);
 
         var middleLineSeparator = GenerateLineSeparator();
         var leftAcceptableArea = new Rectangle(
@@ -90,7 +92,7 @@ public class MainView : Game
             rectanglesView[1].Height,
             middleLineSeparator.X,
             troopButtonY - rectanglesView[1].Height);
-        levels = new List<Field>
+        Levels = new List<Field>
         {
             new Field
             (
@@ -129,33 +131,35 @@ public class MainView : Game
         };
 
 
-        field = levels[0];
+        currentField = Levels[0];
 
     }
 
     //Вызовет после атаки юнита
     private void FieldEventTroopSuccessfulAttack(object sender, TroopAttackHandler args)
     {
-        //потом заменю на анимацию
-        //if (args.SuccessfullAttack)
-        //{
-        //    var troopsGeneralView = this.troopsView[typeof(Peasant)];
-        //    var troopViewData = troopsGeneralView.TroopsData[args.troop];
-        //    if (troopViewData.SpentTime < 0.5f)
-        //    {
-        //        troopsGeneralView.SetColor(args.troop, Color.White);
-        //        troopViewData.SpentTime
-        //            += (float)args.gameTime.ElapsedGameTime.TotalSeconds;
-        //    }
-        //    else
-        //    {
-        //        troopViewData.SpentTime = 0;
-        //        troopsGeneralView.SetColor(
-        //            args.troop, troopsGeneralView.GetTeamColor(args.troop.Team)
-        //            );
-        //        args.SuccessfullAttack = false;
-        //    }
-        //}
+        var troopView = troopsView[(args.troop).GetType()];
+        var troopData = troopView.TroopsData[args.troop];
+        if (!args.SuccessfullAttack)
+        {
+            troopView.SetColor(args.troop, troopView.GetTeamColor(args.troop.Team));
+            return;
+        }
+        if (troopData.SpentTime < args.troop.AttackSpeed)
+        {
+            troopData.SpentTime += (float)args.gameTime.ElapsedGameTime.TotalSeconds;
+            if (troopData.SpentTime > 0.5)
+            {
+                troopView.SetColor(args.troop, troopView.GetTeamColor(args.troop.Team));
+            }
+        }
+        else
+        {
+            troopView.SetColor(args.troop, args.troop.Team == TeamEnum.Red
+                                            ? Color.IndianRed
+                                            : Color.CornflowerBlue);
+            troopData.SpentTime = 0;
+        }
     }
 
     private void FieldEventTroopFailedAttack(object sender, ITroop troop)
@@ -168,14 +172,14 @@ public class MainView : Game
     {
         _gameFeatures.escPress += _gameFeatures.OnEscPressed;
         clickedTroopType = ClickedTroopButtonEnum.None;
-        field.TroopSuccessfulAttack += FieldEventTroopSuccessfulAttack;
-        field.TroopFailedAttack += FieldEventTroopFailedAttack;
+        currentField.TroopEventAttack += FieldEventTroopSuccessfulAttack;
+        currentField.TroopFailedAttack += FieldEventTroopFailedAttack;
         foreach (var generalButton in generalButtons)
         {
             generalButton.Click += (sender, e) =>
             {
-                if (field.Troops.Any(x => x.Team == TeamEnum.Red))
-                    field.ChangeGameState(GameStateEnum.Started);
+                if (currentField.Troops.Any(x => x.Team == TeamEnum.Red))
+                    currentField.ChangeGameState(GameStateEnum.Started);
             };
         }
         foreach (var troopButton in troopButtons.Values)
@@ -254,15 +258,15 @@ public class MainView : Game
             pauseMenu.Update(gameTime);
             if (!flag)
             {
-                previousGameState = field.GameState;
+                previousGameState = currentField.GameState;
                 flag = true;
             }
-            field.ChangeGameState(GameStateEnum.Paused);
+            currentField.ChangeGameState(GameStateEnum.Paused);
             return;
         }
         else
         {
-            if (previousGameState != GameStateEnum.None && flag) field.ChangeGameState(previousGameState);
+            if (previousGameState != GameStateEnum.None && flag) currentField.ChangeGameState(previousGameState);
             flag = false;
             previousGameState = GameStateEnum.None;
         }
@@ -270,13 +274,13 @@ public class MainView : Game
 
         if (!areEnemyTroopsDrawnOnTheStart)
         {
-            foreach (var enemyTroop in field.EnemyTroops)
+            foreach (var enemyTroop in currentField.EnemyTroops)
             {
                 var troopView = troopsView[typeof(Peasant)];
                 var sprite = troopView.Sprite;
                 var troop = enemyTroop.OverrideTroop(
                             enemyTroop.Team, enemyTroop.InitialPosition, sprite.Width, sprite.Height);
-                field.AddTroopEvent(() => troop);
+                currentField.AddTroopEvent(() => troop);
             }
             areEnemyTroopsDrawnOnTheStart = true;
         }
@@ -293,7 +297,7 @@ public class MainView : Game
         var mouseState = Mouse.GetState();
         if (mouseState.LeftButton == ButtonState.Pressed)
         {
-            field.AddTroopEvent(() =>
+            currentField.AddTroopEvent(() =>
             {
                 switch (clickedTroopType)
                 {
@@ -320,22 +324,22 @@ public class MainView : Game
         }
         else if (mouseState.RightButton == ButtonState.Pressed)
         {
-            field.RemoveTroop(mouseState.Position.ToVector2());
+            currentField.RemoveTroop(mouseState.Position.ToVector2());
         }
 
         var keyboardState = Keyboard.GetState();
         if (keyboardState.IsKeyDown(Keys.Tab))
         {
-            ChangeLevelTo(levels.IndexOf(field));
+            ChangeLevelTo(Levels.IndexOf(currentField));
         }
         //else if (keyboardState.IsKeyDown(Keys.Escape))
         //{
         //    _gameFeatures.escPress?.Invoke(this, field.GameState);
         //}
 
-        if (field.GameState == GameStateEnum.Started)
+        if (currentField.GameState == GameStateEnum.Started)
         {
-            field.PlayGame(gameTime);
+            currentField.PlayGame(gameTime);
         }
 
         base.Update(gameTime);
@@ -350,15 +354,15 @@ public class MainView : Game
         {
             environmentView.Draw(_spriteBatch);
         }
-        if (field.GameState == GameStateEnum.ArrangingTroops)
+        if (currentField.GameState == GameStateEnum.ArrangingTroops)
         {
-            _spriteBatch.DrawRectangle(field.LineSeparator, Color.Red);
+            _spriteBatch.DrawRectangle(currentField.LineSeparator, Color.Red);
             DrawUnderMouseRectangle();
-            foreach (var troop in field.Troops)
+            foreach (var troop in currentField.Troops)
             {
                 var viewType = troopsView[troop.GetType()];
                 var troopBehindMouse =
-                    field.GetTroopByPosition(Mouse.GetState().Position.ToVector2());
+                    currentField.GetTroopByPosition(Mouse.GetState().Position.ToVector2());
                 viewType.SetColorForTroopUnderMouse(Color.Gray, troopBehindMouse);
                 viewType.Draw(_spriteBatch, troop);
             }
@@ -380,20 +384,20 @@ public class MainView : Game
 
                 var textType = text.GetType();
                 if (textType == typeof(MoneyTextView))
-                    money = field.Money.ToString();
+                    money = currentField.Money.ToString();
 
                 text.Draw(_spriteBatch, Window, money);
             }
         }
-        else if (field.GameState == GameStateEnum.Started)
+        else if (currentField.GameState == GameStateEnum.Started)
         {
-            foreach (var troop in field.Troops)
+            foreach (var troop in currentField.Troops)
             {
                 var viewType = troopsView[troop.GetType()];
                 viewType.Draw(_spriteBatch, troop);
             }
         }
-        else if (field.GameState == GameStateEnum.Paused)
+        else if (currentField.GameState == GameStateEnum.Paused)
         {
             pauseMenu.Draw(gameTime, _spriteBatch);
         }
@@ -414,10 +418,10 @@ public class MainView : Game
 
     public void ChangeLevelTo(int id)
     {
-        field = levels[id];
+        currentField = Levels[id];
         areEnemyTroopsDrawnOnTheStart = false;
         _gameFeatures.IsGamePaused = false;
-        field.ResetField();
+        currentField.ResetField();
         previousGameState = GameStateEnum.ArrangingTroops;
     }
 
@@ -450,7 +454,7 @@ public class MainView : Game
         var underMouseRectangle = GetUnderMouseRectangle(mousePosition, currentTroopSprite);
         _spriteBatch.DrawRectangle(
             underMouseRectangle,
-            field.CanPlaceTroop(mousePosition, currentTroopSprite.Width, currentTroopSprite.Height)
+            currentField.CanPlaceTroop(mousePosition, currentTroopSprite.Width, currentTroopSprite.Height)
             ? Color.Green
             : Color.Red);
     }

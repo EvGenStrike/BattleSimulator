@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BattleSimulator.Model;
 
-internal class Field
+public class Field
 {
     public List<ITroop> Troops { get; private set; }
     public List<ITroop> EnemyTroops { get; }
@@ -26,7 +26,7 @@ internal class Field
     private Dictionary<ITroop, Rectangle> TroopsCollisions { get; set; }
 
     public event Func<ITroop> addTroopEvent;
-    public event EventHandler<TroopAttackHandler> TroopSuccessfulAttack;
+    public event EventHandler<TroopAttackHandler> TroopEventAttack;
 
     public class TroopAttackHandler
     {
@@ -63,7 +63,7 @@ internal class Field
         if (addTroopEvent() == null)
             return;
         this.addTroopEvent += addTroopEvent;
-        AddTroop();   
+        AddTroop();
     }
 
     private void AddTroop()
@@ -74,13 +74,13 @@ internal class Field
             return;
         if (troop.Team == TeamEnum.Blue && !CanPlaceEnemyTroop(troop))
             return;
-        Troops.Add(troop); 
+        Troops.Add(troop);
         if (troop.Team == TeamEnum.Red)
             Money -= troop.Cost;
         TroopsCollisions.Add(troop, new Rectangle(
-            (int)troop.InitialPosition.X, 
-            (int)troop.InitialPosition.Y, 
-            troop.Width, 
+            (int)troop.InitialPosition.X,
+            (int)troop.InitialPosition.Y,
+            troop.Width,
             troop.Height));
     }
 
@@ -148,7 +148,7 @@ internal class Field
     public void RemoveTroopEvent(Action<Vector2> removeTroopEvent)
     {
         this.removeTroopEvent += removeTroopEvent;
-        
+
     }
 
     public void RemoveTroop(Vector2 position)
@@ -170,7 +170,7 @@ internal class Field
                 return Troops[i];
             }
         }
-        
+
         return null;
     }
 
@@ -217,19 +217,27 @@ internal class Field
             //if (TroopsCollisions[troop].Intersects(TroopsCollisions[closestEnemy]))
             if (GetDistanceBetweenVectors(troop.CurrentPosition, closestEnemy.CurrentPosition) <= troop.AttackDistance)
             {
-                if (troop.TryAttackEnemy(closestEnemy, gameTime))
-                    TroopSuccessfulAttack?.Invoke(
-                        this,
-                        new TroopAttackHandler
-                            {
-                            troop=troop,
-                            gameTime = gameTime,
-                            SuccessfullAttack = true
-                            }
-                        );
-                
+                troop.TryAttackEnemy(closestEnemy, gameTime);
+                TroopEventAttack?.Invoke(
+                    this,
+                    new TroopAttackHandler
+                    {
+                        troop = troop,
+                        gameTime = gameTime,
+                        SuccessfullAttack = true
+                    }
+                    );
                 continue;
             }
+            TroopEventAttack?.Invoke(
+                    this,
+                    new TroopAttackHandler
+                    {
+                        troop = troop,
+                        gameTime = gameTime,
+                        SuccessfullAttack = false
+                    }
+                    );
             var angle = GetAngleBetweenVectors(troop.CurrentPosition, closestEnemy.CurrentPosition);
             troop.Move((float)angle, gameTime);
         }

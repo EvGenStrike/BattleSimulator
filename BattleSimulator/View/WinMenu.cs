@@ -1,23 +1,24 @@
-﻿using BattleSimulator.Model;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace BattleSimulator.View;
 
-public class PauseMenu
+public class WinMenu
 {
     public MainView _MainView;
     public Button[] LevelsButtons { get; set; } = new Button[7];
-    public Button ContinueButton { get; set; }
+    public Button NextLevelButton { get; set; }
     public Button ExitButton { get; set; }
 
     private int fieldWidth;
     private int fieldHeight;
-    
-    public PauseMenu(MainView mainView) 
+
+    public WinMenu(MainView mainView)
     {
         _MainView = mainView;
         fieldWidth = mainView.fieldWidth;
@@ -51,14 +52,14 @@ public class PauseMenu
         var positionX = fieldWidth / 2 - (buttonWidth / 2);
         var positionY = buttonHeight * 2;
 
-        ContinueButton = new Button(
+        NextLevelButton = new Button(
                 new Vector2(positionX, positionY),
                 "Continue",
                 buttonWidth,
                 buttonHeight
             );
 
-        
+
     }
 
     public void GenerateExitButton()
@@ -85,9 +86,9 @@ public class PauseMenu
                 _MainView.ChangeLevelTo(int.Parse(levelButton.InitialText.Last().ToString()) - 1);
             };
         }
-        ContinueButton.Click += (sender, e) =>
+        NextLevelButton.Click += (sender, e) =>
         {
-            _MainView._gameFeatures.IsGamePaused = false;
+            _MainView.ChangeLevelTo(_MainView.Levels.IndexOf(_MainView.currentField) + 1);
         };
         ExitButton.Click += (sender, e) =>
         {
@@ -106,7 +107,7 @@ public class PauseMenu
 
         var continueButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
         var continueButtonFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
-        ContinueButton.LoadContent(continueButtonTextureContent, continueButtonFontContent);
+        NextLevelButton.LoadContent(continueButtonTextureContent, continueButtonFontContent);
 
 
         var exitButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
@@ -120,7 +121,7 @@ public class PauseMenu
         {
             pauseLevelButton.Update(gameTime);
         }
-        ContinueButton.Update(gameTime);
+        NextLevelButton.Update(gameTime);
         ExitButton.Update(gameTime);
     }
 
@@ -133,7 +134,7 @@ public class PauseMenu
         {
             levelButton.Draw(gameTime, spriteBatch);
         }
-        ContinueButton.Draw(gameTime, spriteBatch);
+        NextLevelButton.Draw(gameTime, spriteBatch);
         ExitButton.Draw(gameTime, spriteBatch);
     }
 }
