@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BattleSimulator.View;
-
-public enum ClickedTroopButtonEnum
+namespace BattleSimulator.View
 {
-    None,
-    Peasant,
-    //Boxer
+    internal class PauseMenu
+    {
+    }
 }

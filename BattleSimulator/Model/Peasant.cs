@@ -11,39 +11,45 @@ namespace BattleSimulator.Model;
 
 internal class Peasant : ITroop
 {
-    public TeamEnum Team { get; }
+    public TeamEnum Team { get; private set; }
     public int Health { get; private set; }
-    public int Damage { get; }
-    public int MoveSpeed { get; }
-    public int AttackSpeed { get; }
-    public int AttackDistance { get; }
-    public int Cost { get; }
-    public Vector2 InitialPosition { get; }
+    public int Damage { get; private set; }
+    public int MoveSpeed { get; private set; }
+    public int AttackSpeed { get; private set; }
+    public int AttackDistance { get; private set; }
+    public int Cost { get; private set; }
+    public Vector2 InitialPosition { get; private set; }
     public Vector2 CurrentPosition { get; private set; }
-    public int Width { get; }
-    public int Height { get; }
-    public GameTime CurrentGameTime { get; set; }
-    public float SpentTime { get; set; }
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+    public float SpentTime { get; private set; }
 
-    private Random random;
+    private Random random = new();
+
+    public Peasant()
+    {
+        SetStats();
+    }
 
     public Peasant(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0, GameTime gameTime = null)
     {
         Team = team;
-        Health = 50;
-        Damage = 20;
-        MoveSpeed = 12;
-        AttackSpeed = 2;
-        AttackDistance = 3;
-        Cost = 50;
+        SetStats();
 
         InitialPosition = initialPosition;
         CurrentPosition = InitialPosition;
         Width = width;
         Height = height;
-        CurrentGameTime = gameTime;
+    }
 
-        random = new();
+    public void SetStats()
+    {
+        Health = 50 + random.Next(5) - 2;
+        Damage = 20 + random.Next(3) - 1;
+        MoveSpeed = 12 + random.Next(3) - 1;
+        AttackSpeed = 2;
+        AttackDistance = 3;
+        Cost = 50;
     }
 
     public void Move(float angle, GameTime gameTime)

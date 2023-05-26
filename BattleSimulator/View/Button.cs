@@ -52,20 +52,26 @@ public class Button : Component
     }
 
     public string Text { get; set; }
+    public string InitialText { get; set; }
+    public string HoveredText { get; set; }
 
-    public Button(Vector2 position, string text, int width, int height)
+    public Button(Vector2 position, string text, int width, int height, string hoveredText = null)
     {
         Position = position;
         Text = text;
+        InitialText = text;
+        HoveredText = hoveredText ?? text;
         PenColour = Color.Black;
         Width = width;
         Height = height;
     }
 
-    public Button(Vector2 position, string text, Color color, int width, int height)
+    public Button(Vector2 position, string text, Color color, int width, int height, string hoveredText = null)
     {
         Position = position;
         Text = text;
+        InitialText = text;
+        HoveredText = hoveredText ?? text;
         PenColour = color;
         Width = width;
         Height = height;
@@ -82,10 +88,15 @@ public class Button : Component
     {
         var colour = Color.White;
 
+        Text = _isHovering ? HoveredText : InitialText;
         if (_isHovering)
+        {
             colour = Color.Gray;
+        }
         else if (IsChosen)
+        {
             colour = Color.DarkGray;
+        }
 
         spriteBatch.Draw(_texture, Rectangle, colour);
 
