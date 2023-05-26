@@ -239,7 +239,10 @@ internal class Field
         TroopsCollisions = TroopsCollisions
             .Where(x => x.Key.Team == TeamEnum.Blue)
             .ToDictionary(x => x.Key, c => c.Value);
+        Troops.Clear();
+        TroopsCollisions.Clear();
         Money = StartMoney;
+        ChangeGameState(GameStateEnum.ArrangingTroops);
     }
 
     private ITroop GetClosestEnemyTroop(ITroop troop)

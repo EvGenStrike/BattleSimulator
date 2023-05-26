@@ -10,7 +10,7 @@ namespace BattleSimulator.View;
 
 public class GameFeatures
 {
-    public bool IsGamePaused {get; private set;}
+    public bool IsGamePaused {get; set;}
     public EventHandler escPress;
 
     private Game _Game;

@@ -24,6 +24,7 @@ public class MainView : Game
     private readonly Dictionary<Type, ITroopView> troopsView;
     private List<ITextView> textsView;
     private List<Rectangle> rectanglesView;
+    private PauseMenu pauseMenu;
 
     private List<Button> generalButtons;
     private Dictionary<ClickedTroopButtonEnum, Button> troopButtons;
@@ -81,6 +82,9 @@ public class MainView : Game
             new Rectangle(0, 0, fieldWidth, generalButtons[0].Height),
         };
 
+        pauseMenu = new(fieldWidth, fieldHeight);
+        pauseMenu.GenerateLevelsButtons();
+
         var middleLineSeparator = GenerateLineSeparator();
         var leftAcceptableArea = new Rectangle(
             0,
@@ -119,11 +123,9 @@ public class MainView : Game
             )
         };
 
+
         field = levels[0];
 
-        clickedTroopType = ClickedTroopButtonEnum.None;
-        field.TroopSuccessfulAttack += FieldEventTroopSuccessfulAttack;
-        field.TroopFailedAttack += FieldEventTroopFailedAttack;
     }
 
     //Вызовет после атаки юнита
@@ -160,6 +162,9 @@ public class MainView : Game
     protected override void Initialize()
     {
         _gameFeatures.escPress += _gameFeatures.OnEscPressed;
+        clickedTroopType = ClickedTroopButtonEnum.None;
+        field.TroopSuccessfulAttack += FieldEventTroopSuccessfulAttack;
+        field.TroopFailedAttack += FieldEventTroopFailedAttack;
         foreach (var generalButton in generalButtons)
         {
             generalButton.Click += (sender, e) =>
@@ -178,6 +183,13 @@ public class MainView : Game
                 {
                     previousTroopButton.IsChosen = previousTroopButton == troopButton;
                 }
+            };
+        }
+        foreach (var pauseLevelButton in pauseMenu.LevelsButtons)
+        {
+            pauseLevelButton.Click += (sender, e) =>
+            {
+                ChangeLevelTo(int.Parse(pauseLevelButton.InitialText.Last().ToString()) - 1);
             };
         }
         foreach (var environmentElement in environmentView)
@@ -207,6 +219,12 @@ public class MainView : Game
             var textureContent = Content.Load<Texture2D>("Button_Sample");
             var fontContent = Content.Load<SpriteFont>("ButtonFont_Sample");
             troopButton.LoadContent(textureContent, fontContent);
+        }
+        foreach (var pauseLevelButton in pauseMenu.LevelsButtons)
+        {
+            var textureContent = Content.Load<Texture2D>("Button_Sample");
+            var fontContent = Content.Load<SpriteFont>("ButtonFont_Sample");
+            pauseLevelButton.LoadContent(textureContent, fontContent);
         }
         foreach (var environmentElement in environmentView)
         {
@@ -238,6 +256,10 @@ public class MainView : Game
         _gameFeatures.TryPauseGame();
         if (_gameFeatures.IsGamePaused)
         {
+            foreach (var pauseLevelButton in pauseMenu.LevelsButtons)
+            {
+                pauseLevelButton.Update(gameTime);
+            }
             if (!flag)
             {
                 previousGameState = field.GameState;
@@ -248,12 +270,12 @@ public class MainView : Game
         }
         else
         {
+            if (previousGameState != GameStateEnum.None && flag) field.ChangeGameState(previousGameState);
             flag = false;
-            if (previousGameState != GameStateEnum.None) field.ChangeGameState(previousGameState);
             previousGameState = GameStateEnum.None;
         }
 
-        
+
         if (!areEnemyTroopsDrawnOnTheStart)
         {
             foreach (var enemyTroop in field.EnemyTroops)
@@ -307,16 +329,6 @@ public class MainView : Game
         else if (mouseState.RightButton == ButtonState.Pressed)
         {
             field.RemoveTroop(mouseState.Position.ToVector2());
-        }
-
-        var keyboardState = Keyboard.GetState();
-        if (keyboardState.IsKeyDown(Keys.H))
-        {
-            ChangeLevelTo(0);
-        }
-        else if (keyboardState.IsKeyDown(Keys.J))
-        {
-            ChangeLevelTo(1);
         }
 
         if (field.GameState == GameStateEnum.Started)
@@ -381,8 +393,7 @@ public class MainView : Game
         }
         else if (field.GameState == GameStateEnum.Paused)
         {
-            var blackRect = new Rectangle(0, 0, fieldWidth, fieldHeight);
-            _spriteBatch.DrawRectangle(blackRect, Color.Black * 0.5f);
+            DrawPauseMenu(gameTime);
         }
 
         _spriteBatch.End();
@@ -447,11 +458,22 @@ public class MainView : Game
 
     private void ChangeLevelTo(int id)
     {
-        if (field.GameState == GameStateEnum.ArrangingTroops)
+
+        field = levels[id];
+        areEnemyTroopsDrawnOnTheStart = false;
+        _gameFeatures.IsGamePaused = false;
+        field.ResetField();
+        previousGameState = GameStateEnum.ArrangingTroops;
+    }
+
+    private void DrawPauseMenu(GameTime gameTime)
+    {
+        var blackRect = new Rectangle(0, 0, fieldWidth, fieldHeight);
+        _spriteBatch.DrawRectangle(blackRect, Color.Black * 0.5f);
+
+        foreach (var levelButton in pauseMenu.LevelsButtons)
         {
-            field = levels[id];
-            areEnemyTroopsDrawnOnTheStart = false;
-            field.ResetField();
+            levelButton.Draw(gameTime, _spriteBatch);
         }
     }
 }
