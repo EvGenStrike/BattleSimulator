@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,6 +159,7 @@ public class MainView : Game
         }
         else
         {
+            MediaPlayer.Play(troopView.HitSound);
             troopView.SetColor(args.troop, args.troop.Team == TeamEnum.Red
                                             ? Color.IndianRed
                                             : Color.CornflowerBlue);
@@ -173,6 +175,8 @@ public class MainView : Game
 
     protected override void Initialize()
     {
+        MediaPlayer.Volume = 0.1f;
+
         _gameFeatures.escPress += _gameFeatures.OnEscPressed;
         clickedTroopType = ClickedTroopButtonEnum.None;
         currentField.TroopEventAttack += FieldEventTroopSuccessfulAttack;
@@ -241,10 +245,11 @@ public class MainView : Game
             var content = Content.Load<Texture2D>(environmentElement.SpriteAssetName);
             environmentElement.LoadContent(content);
         }
-        foreach (var sprite in troopsView.Values)
+        foreach (var view in troopsView.Values)
         {
-            var content = Content.Load<Texture2D>(sprite.SpriteAssetName);
-            sprite.LoadContent(content);
+            var spriteAsset = Content.Load<Texture2D>(view.SpriteAssetName);
+            var hitSound = Content.Load<Song>(view.HitSoundName);
+            view.LoadContent(spriteAsset, hitSound);
         }
         foreach (var text in textsView)
         {

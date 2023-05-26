@@ -5,13 +5,16 @@ using BattleSimulator.Model;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Microsoft.Xna.Framework.Media;
 
 namespace BattleSimulator.View;
 
 internal class PeasantView : ITroopView
 {
     public string SpriteAssetName => "Peasant_Sample";
+    public string HitSoundName => "Peasant_Hit";
     public Texture2D Sprite { get; private set; }
+    public Song HitSound { get; private set; }
     public Dictionary<ITroop, PeasantViewData> TroopsData { get; private set; }
 
     
@@ -21,9 +24,10 @@ internal class PeasantView : ITroopView
         TroopsData = new();
     }
 
-    public void LoadContent(Texture2D spriteTexture)
+    public void LoadContent(Texture2D spriteTexture, Song hitSound)
     {
         Sprite = spriteTexture;
+        HitSound = hitSound;
     }
 
     public void Draw(
