@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using static BattleSimulator.Model.Field;
 
@@ -65,6 +66,7 @@ public class MainView : Game
         troopsView = new Dictionary<Type, ITroopView>
         {
             { typeof(Peasant), new PeasantView() },
+            { typeof(Boxer), new BoxerView() },
         };
 
 
@@ -139,7 +141,6 @@ public class MainView : Game
 
     }
 
-    //Вызовет после атаки юнита
     private void FieldEventTroopSuccessfulAttack(object sender, TroopAttackHandler args)
     {
         var troopView = troopsView[(args.troop).GetType()];
@@ -300,7 +301,7 @@ public class MainView : Game
         {
             foreach (var enemyTroop in currentField.EnemyTroops)
             {
-                var troopView = troopsView[typeof(Peasant)];
+                var troopView = troopsView[enemyTroop.GetType()];
                 var sprite = troopView.Sprite;
                 var troop = enemyTroop.OverrideTroop(
                             enemyTroop.Team, enemyTroop.InitialPosition, sprite.Width, sprite.Height);
@@ -323,24 +324,54 @@ public class MainView : Game
         {
             currentField.AddTroopEvent(() =>
             {
+                ITroop CreateTroop<T>()
+                {
+                    var position = new Vector2(mouseState.X, mouseState.Y);
+                    var troopType = typeof(T);
+                    var sprite = troopsView[troopType].Sprite;
+
+                    var constructor = troopType.GetConstructor(new Type[]
+                    {
+                        typeof(TeamEnum),
+                        typeof(Vector2),
+                        typeof(int),
+                        typeof(int)
+                    }
+                    );
+                    var troop = constructor.Invoke(new object[] 
+                    {
+                         TeamEnum.Red,
+                        new Vector2(
+                            position.X - sprite.Width / 2,
+                            position.Y - sprite.Height / 2
+                            ),
+                        sprite.Width,
+                        sprite.Height
+                    });
+ 
+                    return (ITroop)troop;
+                }
+
                 switch (clickedTroopType)
                 {
                     case ClickedTroopButtonEnum.None:
                         return null;
                     case ClickedTroopButtonEnum.Peasant:
-                        var position = new Vector2(mouseState.X, mouseState.Y);
-                        var sprite = troopsView[typeof(Peasant)].Sprite;
+                        //var position = new Vector2(mouseState.X, mouseState.Y);
+                        //var sprite = troopsView[typeof(Peasant)].Sprite;
 
-                        var troop = new Peasant(
-                            TeamEnum.Red,
-                            new Vector2(
-                                position.X - sprite.Width / 2,
-                                position.Y - sprite.Height / 2
-                                ),
-                            sprite.Width,
-                            sprite.Height,
-                            gameTime);
-                        return troop;
+                        //var troop = new Peasant(
+                        //    TeamEnum.Red,
+                        //    new Vector2(
+                        //        position.X - sprite.Width / 2,
+                        //        position.Y - sprite.Height / 2
+                        //        ),
+                        //    sprite.Width,
+                        //    sprite.Height);
+                        //return troop;
+                        return CreateTroop<Peasant>();
+                    case ClickedTroopButtonEnum.Boxer:
+                        return CreateTroop<Boxer>();
                     default:
                         return null;
                 }
@@ -460,6 +491,12 @@ public class MainView : Game
 
     private Dictionary<ClickedTroopButtonEnum, Button> GenerateTroopsButtons()
     {
+        ITroop CreateTestTroop(string troopName)
+        {
+            var instance = Activator.CreateInstance(null, $"BattleSimulator.Model.{troopName}");
+            return (ITroop)instance.Unwrap();
+        }
+
         var troopsButtons = new Dictionary<ClickedTroopButtonEnum, Button>();
         var buttonWidth = fieldWidth / 10;
         var buttonHeight = fieldHeight / 10;
@@ -469,9 +506,10 @@ public class MainView : Game
         foreach (var troopName in Enum.GetNames(typeof(ClickedTroopButtonEnum)))
         {
             if (troopName == "None") continue;
+            
             troopsButtons.Add(
                 (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopName),
-                new Button(previousPosition, troopName, buttonWidth, buttonHeight, new Peasant().Cost.ToString()));
+                new Button(previousPosition, troopName, buttonWidth, buttonHeight, CreateTestTroop(troopName).Cost.ToString()));
             previousPosition.X += buttonWidth;
         }
 

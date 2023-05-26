@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BattleSimulator.Model;
 
-internal class Peasant : ITroop
+internal class Boxer : ITroop
 {
     public TeamEnum Team { get; private set; }
     public float Health { get; private set; }
@@ -26,12 +26,12 @@ internal class Peasant : ITroop
 
     private Random random = new();
 
-    public Peasant()
+    public Boxer()
     {
         SetStats();
     }
 
-    public Peasant(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
+    public Boxer(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
     {
         Team = team;
         SetStats();
@@ -44,12 +44,12 @@ internal class Peasant : ITroop
 
     public void SetStats()
     {
-        Health = 50 + random.Next(5) - 2;
-        Damage = 20 + random.Next(3) - 1;
-        MoveSpeed = 12 + random.Next(3) - 1;
+        Health = 200 + random.Next(9) - 4;
+        Damage = 50 + random.Next(5) - 2;
+        MoveSpeed = 8 + random.Next(3) - 1;
         AttackSpeed = 2 + (float)((random.NextDouble() - 0.5) / 2);
-        AttackDistance = 80;
-        Cost = 50;
+        AttackDistance = 60;
+        Cost = 200;
     }
 
     public void Move(float angle, GameTime gameTime)
