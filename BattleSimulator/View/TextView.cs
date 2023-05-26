@@ -11,7 +11,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace BattleSimulator.View;
 
-internal class MoneyTextView : ITextView
+public class TextView : ITextView
 {
     public string TextAssetName { get; } = "MyFont";
     public SpriteFont TextFont { get; private set; }
@@ -25,7 +25,7 @@ internal class MoneyTextView : ITextView
 
     private Color color;
 
-    public MoneyTextView(string text, Vector2 position, Color color)
+    public TextView(string text, Vector2 position, Color color)
     {
         userText = text;
         userPosition = position;
@@ -44,7 +44,7 @@ internal class MoneyTextView : ITextView
     {
         text = $"{userText}{newText}";
         textSize = TextFont.MeasureString(text);
-        position = new Vector2(userPosition.X, userPosition.Y - textSize.Y);
+        position = new Vector2(userPosition.X - textSize.X / 2, userPosition.Y - textSize.Y / 2);
         spriteBatch.DrawString(
             TextFont,
             text,

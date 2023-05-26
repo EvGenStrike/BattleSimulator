@@ -213,7 +213,11 @@ public class Field
         {
             if (troop.Health <= 0) Troops.Remove(troop);
             var closestEnemy = GetClosestEnemyTroop(troop);
-            if (closestEnemy is null) continue;
+            if (closestEnemy is null)
+            {
+                ChangeGameState(GameStateEnum.Finished);
+                return;
+            }
             //if (TroopsCollisions[troop].Intersects(TroopsCollisions[closestEnemy]))
             if (GetDistanceBetweenVectors(troop.CurrentPosition, closestEnemy.CurrentPosition) <= troop.AttackDistance)
             {
@@ -252,6 +256,13 @@ public class Field
         TroopsCollisions.Clear();
         Money = StartMoney;
         ChangeGameState(GameStateEnum.ArrangingTroops);
+        if (TroopEventAttack  != null)
+        {
+            foreach (var myEvent in TroopEventAttack.GetInvocationList())
+            {
+                TroopEventAttack -= myEvent as EventHandler<TroopAttackHandler>;
+            }
+        }
     }
 
     private ITroop GetClosestEnemyTroop(ITroop troop)

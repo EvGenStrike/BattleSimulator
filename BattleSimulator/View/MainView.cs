@@ -24,8 +24,10 @@ public class MainView : Game
     private readonly Dictionary<Type, ITroopView> troopsView;
     private List<ITextView> textsView;
     private List<Rectangle> rectanglesView;
+
     private PauseMenu pauseMenu;
     private WinMenu winMenu;
+    private LoseMenu loseMenu;
 
     private List<Button> generalButtons;
     private Dictionary<ClickedTroopButtonEnum, Button> troopButtons;
@@ -53,9 +55,9 @@ public class MainView : Game
         };
         textsView = new List<ITextView>
         {
-            new MoneyTextView(
+            new TextView(
                 "",
-                new Vector2(fieldWidth / 100, fieldHeight),
+                new Vector2(fieldWidth / 30, fieldHeight - fieldHeight / 30),
                 Color.Gold
                 )
         };
@@ -85,6 +87,7 @@ public class MainView : Game
 
         pauseMenu = new(this);
         winMenu = new(this);
+        loseMenu = new(this);
 
         var middleLineSeparator = GenerateLineSeparator();
         var leftAcceptableArea = new Rectangle(
@@ -126,7 +129,7 @@ public class MainView : Game
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 300)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 200)),
                 },
-                450
+                400
             )
         };
 
@@ -195,7 +198,11 @@ public class MainView : Game
                 }
             };
         }
+
         pauseMenu.Initialize();
+        winMenu.Initialize();
+        loseMenu.Initialize();
+
         foreach (var environmentElement in environmentView)
         {
             environmentElement.Initialize(_graphics, Window);
@@ -224,7 +231,11 @@ public class MainView : Game
             var fontContent = Content.Load<SpriteFont>("ButtonFont_Sample");
             troopButton.LoadContent(textureContent, fontContent);
         }
+
         pauseMenu.LoadContent();
+        winMenu.LoadContent();
+        loseMenu.LoadContent();
+
         foreach (var environmentElement in environmentView)
         {
             var content = Content.Load<Texture2D>(environmentElement.SpriteAssetName);
@@ -252,6 +263,14 @@ public class MainView : Game
     bool flag;
     protected override void Update(GameTime gameTime)
     {
+        if (currentField.GameState == GameStateEnum.Finished)
+        {
+            if (currentField.Troops.Any(x => x.Team == TeamEnum.Red))
+                winMenu.Update(gameTime);
+            else
+                loseMenu.Update(gameTime);
+            return;
+        }
         _gameFeatures.TryPauseGame();
         if (_gameFeatures.IsGamePaused)
         {
@@ -332,10 +351,6 @@ public class MainView : Game
         {
             ChangeLevelTo(Levels.IndexOf(currentField));
         }
-        //else if (keyboardState.IsKeyDown(Keys.Escape))
-        //{
-        //    _gameFeatures.escPress?.Invoke(this, field.GameState);
-        //}
 
         if (currentField.GameState == GameStateEnum.Started)
         {
@@ -383,7 +398,7 @@ public class MainView : Game
                 var money = string.Empty;
 
                 var textType = text.GetType();
-                if (textType == typeof(MoneyTextView))
+                if (textType == typeof(TextView))
                     money = currentField.Money.ToString();
 
                 text.Draw(_spriteBatch, Window, money);
@@ -400,6 +415,18 @@ public class MainView : Game
         else if (currentField.GameState == GameStateEnum.Paused)
         {
             pauseMenu.Draw(gameTime, _spriteBatch);
+        }
+        else if (currentField.GameState == GameStateEnum.Finished)
+        {
+            foreach (var troop in currentField.Troops)
+            {
+                var viewType = troopsView[troop.GetType()];
+                viewType.Draw(_spriteBatch, troop);
+            }
+            if (currentField.Troops.Any(x => x.Team == TeamEnum.Red))
+                winMenu.Draw(gameTime, _spriteBatch);
+            else
+                loseMenu.Draw(gameTime, _spriteBatch);
         }
 
         _spriteBatch.End();
@@ -423,6 +450,7 @@ public class MainView : Game
         _gameFeatures.IsGamePaused = false;
         currentField.ResetField();
         previousGameState = GameStateEnum.ArrangingTroops;
+        currentField.TroopEventAttack += FieldEventTroopSuccessfulAttack;
     }
 
     private Dictionary<ClickedTroopButtonEnum, Button> GenerateTroopsButtons()

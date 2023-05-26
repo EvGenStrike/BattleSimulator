@@ -67,7 +67,6 @@ internal class Peasant : ITroop
 
     public bool TryAttackEnemy(ITroop enemy, GameTime gameTime)
     {
-        //enemy.DecreaseHealth()
         if (SpentTime >= (AttackSpeed + (new Random().NextDouble() - 0.5) * 0.5))
         {
             SpentTime = 0;
