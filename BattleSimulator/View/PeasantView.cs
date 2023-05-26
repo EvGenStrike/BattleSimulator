@@ -12,12 +12,13 @@ internal class PeasantView : ITroopView
 {
     public string SpriteAssetName => "Peasant_Sample";
     public Texture2D Sprite { get; private set; }
+    public Dictionary<ITroop, PeasantViewData> TroopsData { get; private set; }
 
-    private Dictionary<ITroop, Color> TroopColors;
+    
 
     public void Initialize(GraphicsDeviceManager graphics, GameWindow gameWindow)
     {
-        TroopColors = new Dictionary<ITroop, Color>();
+        TroopsData = new();
     }
 
     public void LoadContent(Texture2D spriteTexture)
@@ -29,14 +30,15 @@ internal class PeasantView : ITroopView
         SpriteBatch spriteBatch,
         ITroop troop)
     {
+        TroopsData.TryAdd(troop, new());
         var color = default(Color);
-        if (!TroopColors.ContainsKey(troop))
+        if (!TroopsData.ContainsKey(troop))
         {
             color = GetTeamColor(troop.Team);
         }
         else
         {
-            color = TroopColors[troop];
+            color = TroopsData[troop].Color;
         }
 
         spriteBatch.Draw(
@@ -53,19 +55,28 @@ internal class PeasantView : ITroopView
             );
     }
 
+    public void SetColor(ITroop troop, Color color)
+    {
+        TroopsData.TryAdd(troop, new());
+        TroopsData[troop].Color = color;
+    }
+
     public void SetColorForTroopUnderMouse(Color color, ITroop troop)
     {
-        if (troop != null)      
-            TroopColors[troop] = color;
-        foreach (var troopColor in TroopColors)
+        if (troop != null)
         {
-            TroopColors[troopColor.Key] = troopColor.Key == troop
+            TroopsData.TryAdd(troop, new());
+            TroopsData[troop].Color = color;
+        }
+        foreach (var troopColor in TroopsData)
+        {
+            TroopsData[troopColor.Key].Color = troopColor.Key == troop
                 ? color
                 : GetTeamColor(troopColor.Key.Team);
         }
     }
 
-    private Color GetTeamColor(TeamEnum team)
+    public Color GetTeamColor(TeamEnum team)
     {
         switch (team)
         {
