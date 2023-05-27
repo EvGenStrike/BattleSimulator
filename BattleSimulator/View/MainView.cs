@@ -319,7 +319,7 @@ public class MainView : Game
 
     protected override void Initialize()
     {
-        MediaPlayer.Volume = 0.1f;
+        MediaPlayer.Volume = 0.02f;
 
         _gameFeatures.escPress += _gameFeatures.OnEscPressed;
         clickedTroopType = ClickedTroopButtonEnum.None;
@@ -704,6 +704,6 @@ public class MainView : Game
         var soundEffectInstance = soundEffect.CreateInstance();
         soundEffectInstance.IsLooped = false;
         soundEffectInstance.Play();
-        soundEffectInstance.Volume = 0.1f;
+        soundEffectInstance.Volume = 0.05f;
     }
 }
