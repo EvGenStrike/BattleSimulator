@@ -88,7 +88,7 @@ internal class BoxerView : ITroopView
             case TeamEnum.Red:
                 return Color.IndianRed;
             case TeamEnum.Blue:
-                return Color.Blue;
+                return Color.DeepSkyBlue;
             default:
                 return Color.White;
         }

@@ -12,7 +12,7 @@ namespace BattleSimulator.View;
 
 internal class BackgroundView : IEnvironmentView
 {
-    public string SpriteAssetName { get; } = "Grass_Sample";
+    public string SpriteAssetName { get; } = "Cobblestone_Background";
     public Texture2D Sprite { get; private set; }
 
     private GameWindow gameWindow;
@@ -34,10 +34,10 @@ internal class BackgroundView : IEnvironmentView
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        var backgroundScale = new Vector2(
-            Sprite.Width * (gameWindow.ClientBounds.Width / (gameWindow.ClientBounds.Width - Sprite.Width)),
-            Sprite.Height * (gameWindow.ClientBounds.Height / (gameWindow.ClientBounds.Height - Sprite.Height))
-            );
+        //var backgroundScale = new Vector2(
+        //    Sprite.Width * (gameWindow.ClientBounds.Width / (gameWindow.ClientBounds.Width - Sprite.Width)),
+        //    Sprite.Height * (gameWindow.ClientBounds.Height / (gameWindow.ClientBounds.Height - Sprite.Height))
+        //    );
         spriteBatch.Draw(
                 Sprite,
                 position,
@@ -45,7 +45,7 @@ internal class BackgroundView : IEnvironmentView
                 Color.White,
                 0f,
                 new Vector2(Sprite.Width / 2, Sprite.Height / 2),
-                backgroundScale,
+                1,
                 SpriteEffects.None,
                 0f
             );
