@@ -19,8 +19,8 @@ public class Field
     public Rectangle LineSeparator { get; }
     public int Money { get; private set; }
     public int StartMoney { get; private set; }
-    public int FieldWidth { get; }
-    public int FieldHeight { get; }
+    public int FieldWidth { get; private set; }
+    public int FieldHeight { get; private set; }
     public GameStateEnum GameState { get; private set; }
 
     private Dictionary<ITroop, Rectangle> TroopsCollisions { get; set; }

@@ -31,6 +31,7 @@ public class MainView : Game
     private PauseMenu pauseMenu;
     private WinMenu winMenu;
     private LoseMenu loseMenu;
+    private IntroductionMenu introductionMenu;
 
     private List<Button> generalButtons;
     private Dictionary<ClickedTroopButtonEnum, Button> troopButtons;
@@ -95,6 +96,7 @@ public class MainView : Game
         pauseMenu = new(this);
         winMenu = new(this);
         loseMenu = new(this);
+        introductionMenu = new(this);
 
         var middleLineSeparator = GenerateLineSeparator();
         var leftAcceptableArea = new Rectangle(
@@ -313,12 +315,6 @@ public class MainView : Game
         }
     }
 
-    private void FieldEventTroopFailedAttack(object sender, ITroop troop)
-    {
-        var troopsView = this.troopsView[typeof(Peasant)];
-        troopsView.SetColor(troop, troopsView.GetTeamColor(troop.Team));
-    }
-
     protected override void Initialize()
     {
         MediaPlayer.Volume = 0.1f;
@@ -326,7 +322,7 @@ public class MainView : Game
         _gameFeatures.escPress += _gameFeatures.OnEscPressed;
         clickedTroopType = ClickedTroopButtonEnum.None;
         currentField.TroopEventAttack += FieldEventTroopSuccessfulAttack;
-        currentField.TroopFailedAttack += FieldEventTroopFailedAttack;
+
         foreach (var generalButton in generalButtons)
         {
             generalButton.Click += (sender, e) =>
@@ -352,6 +348,7 @@ public class MainView : Game
         pauseMenu.Initialize();
         winMenu.Initialize();
         loseMenu.Initialize();
+        introductionMenu.Initialize();
 
         foreach (var environmentElement in environmentView)
         {
@@ -385,6 +382,7 @@ public class MainView : Game
         pauseMenu.LoadContent();
         winMenu.LoadContent();
         loseMenu.LoadContent();
+        introductionMenu.LoadContent();
 
         foreach (var environmentElement in environmentView)
         {
@@ -414,6 +412,11 @@ public class MainView : Game
     bool flag;
     protected override void Update(GameTime gameTime)
     {
+        if (introductionMenu.IsFirstLaunch)
+        {
+            introductionMenu.Update(gameTime);
+            return;
+        }
         if (currentField.GameState == GameStateEnum.Finished)
         {
             if (currentField.Troops.Any(x => x.Team == TeamEnum.Red))
@@ -483,7 +486,7 @@ public class MainView : Game
                         typeof(int)
                     }
                     );
-                    var troop = constructor.Invoke(new object[] 
+                    var troop = constructor.Invoke(new object[]
                     {
                          TeamEnum.Red,
                         new Vector2(
@@ -493,7 +496,7 @@ public class MainView : Game
                         sprite.Width,
                         sprite.Height
                     });
- 
+
                     return (ITroop)troop;
                 }
 
@@ -540,6 +543,7 @@ public class MainView : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+
         foreach (var environmentView in environmentView)
         {
             environmentView.Draw(_spriteBatch);
@@ -604,6 +608,11 @@ public class MainView : Game
                 loseMenu.Draw(gameTime, _spriteBatch);
         }
 
+        if (introductionMenu.IsFirstLaunch)
+        {
+            introductionMenu.Draw(gameTime, _spriteBatch);
+        }
+
         _spriteBatch.End();
 
         base.Draw(gameTime);
@@ -645,7 +654,7 @@ public class MainView : Game
         foreach (var troopName in Enum.GetNames(typeof(ClickedTroopButtonEnum)))
         {
             if (troopName == "None") continue;
-            
+
             troopsButtons.Add(
                 (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopName),
                 new Button(previousPosition, troopName, buttonWidth, buttonHeight, CreateTestTroop(troopName).Cost.ToString()));

@@ -39,11 +39,7 @@ public class GameFeatures
 
     public void OnEscPressed(object sender, GameStateEnum gameState)
     {
-        if (gameState == GameStateEnum.Paused)
-        {
-            //_Game.Exit();
-        }
-        else
+        if (gameState != GameStateEnum.Paused)
         {
             IsGamePaused = true;
         }
