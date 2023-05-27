@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 
 namespace BattleSimulator.View;
 
@@ -14,7 +15,7 @@ internal class BoxerView : ITroopView
     public string SpriteAssetName => "Boxer_Sample";
     public string HitSoundName => "Boxer_Hit";
     public Texture2D Sprite { get; private set; }
-    public Song HitSound { get; private set; }
+    public SoundEffect HitSound { get; private set; }
     public Dictionary<ITroop, ViewData> TroopsData { get; private set; }
     public Color HurtColor { get; private set; }
 
@@ -23,7 +24,7 @@ internal class BoxerView : ITroopView
         TroopsData = new();
     }
 
-    public void LoadContent(Texture2D spriteTexture, Song hitSound)
+    public void LoadContent(Texture2D spriteTexture, SoundEffect hitSound)
     {
         Sprite = spriteTexture;
         HitSound = hitSound;

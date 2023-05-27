@@ -27,7 +27,7 @@
 
 #begin Archer_Hit.mp3
 /importer:Mp3Importer
-/processor:SongProcessor
+/processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Archer_Hit.mp3
 
@@ -51,7 +51,7 @@
 
 #begin Boxer_Hit.mp3
 /importer:Mp3Importer
-/processor:SongProcessor
+/processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Boxer_Hit.mp3
 
@@ -119,7 +119,7 @@
 
 #begin GoblinGiant_Hit.mp3
 /importer:Mp3Importer
-/processor:SongProcessor
+/processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:GoblinGiant_Hit.mp3
 
@@ -149,7 +149,7 @@
 
 #begin Peasant_Hit.mp3
 /importer:Mp3Importer
-/processor:SongProcessor
+/processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Peasant_Hit.mp3
 
@@ -167,7 +167,7 @@
 
 #begin Zombie_Hit.mp3
 /importer:Mp3Importer
-/processor:SongProcessor
+/processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Zombie_Hit.mp3
 

@@ -1,5 +1,6 @@
 ﻿using BattleSimulator.Model;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using System;
@@ -16,13 +17,13 @@ public interface ITroopView
     public string HitSoundName { get; }
     public Texture2D Sprite { get; }
     public Dictionary<ITroop, ViewData> TroopsData { get; }
-    public Song HitSound { get; }
+    public SoundEffect HitSound { get; }
     public Color HurtColor { get; }
 
     public void Initialize(
         GraphicsDeviceManager graphics,
         GameWindow gameWindow);
-    public void LoadContent(Texture2D spriteTexture, Song hitSound);
+    public void LoadContent(Texture2D spriteTexture, SoundEffect hitSound);
     public void Draw(
         SpriteBatch spriteBatch,
         ITroop troop);

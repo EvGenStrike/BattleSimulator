@@ -1,5 +1,6 @@
 ﻿using BattleSimulator.Model;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
@@ -310,7 +311,7 @@ public class MainView : Game
         }
         else
         {
-            MediaPlayer.Play(troopView.HitSound);
+            PlaySound(troopView.HitSound);
             troopView.SetColor(args.troop, troopView.GetHurtColor(args.troop.Team));
             troopData.SpentTime = 0;
         }
@@ -394,7 +395,7 @@ public class MainView : Game
         foreach (var view in troopsView.Values)
         {
             var spriteAsset = Content.Load<Texture2D>(view.SpriteAssetName);
-            var hitSound = Content.Load<Song>(view.HitSoundName);
+            var hitSound = Content.Load<SoundEffect>(view.HitSoundName);
             view.LoadContent(spriteAsset, hitSound);
         }
         foreach (var text in textsView)
@@ -696,5 +697,13 @@ public class MainView : Game
     {
         BackgroundMusic = Content.Load<Song>("Background_Music");
         MediaPlayer.Play(BackgroundMusic);
+    }
+
+    private void PlaySound(SoundEffect soundEffect)
+    {
+        var soundEffectInstance = soundEffect.CreateInstance();
+        soundEffectInstance.IsLooped = false;
+        soundEffectInstance.Play();
+        soundEffectInstance.Volume = 0.1f;
     }
 }
