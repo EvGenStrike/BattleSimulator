@@ -27,6 +27,7 @@ public class MainView : Game
     private readonly Dictionary<Type, ITroopView> troopsView;
     private List<ITextView> textsView;
     private List<Rectangle> rectanglesView;
+    private Song BackgroundMusic;
 
     private PauseMenu pauseMenu;
     private WinMenu winMenu;
@@ -384,6 +385,7 @@ public class MainView : Game
         loseMenu.LoadContent();
         introductionMenu.LoadContent();
 
+        PlayBackgroundMusic();
         foreach (var environmentElement in environmentView)
         {
             var content = Content.Load<Texture2D>(environmentElement.SpriteAssetName);
@@ -688,5 +690,11 @@ public class MainView : Game
         return new Rectangle(
             x - halfWidth, y - halfHeight, chosenTroopSprite.Width, chosenTroopSprite.Height
             );
+    }
+
+    private void PlayBackgroundMusic()
+    {
+        BackgroundMusic = Content.Load<Song>("Background_Music");
+        MediaPlayer.Play(BackgroundMusic);
     }
 }

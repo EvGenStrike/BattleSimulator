@@ -43,6 +43,12 @@
 /processorParam:TextureFormat=Color
 /build:Archer_Sample.png
 
+#begin Background_Music.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Background_Music.mp3
+
 #begin Boxer_Hit.mp3
 /importer:Mp3Importer
 /processor:SongProcessor
