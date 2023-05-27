@@ -99,17 +99,17 @@ public class PauseMenu
     {
         foreach (var pauseLevelButton in LevelsButtons)
         {
-            var levelTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
+            var levelTextureContent = _MainView.Content.Load<Texture2D>("Button_Upgraded_Sample");
             var levelFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
             pauseLevelButton.LoadContent(levelTextureContent, levelFontContent);
         }
 
-        var continueButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
+        var continueButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Upgraded_Sample");
         var continueButtonFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
         ContinueButton.LoadContent(continueButtonTextureContent, continueButtonFontContent);
 
 
-        var exitButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
+        var exitButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Upgraded_Sample");
         var exitButtonFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
         ExitButton.LoadContent(exitButtonTextureContent, exitButtonFontContent);
     }

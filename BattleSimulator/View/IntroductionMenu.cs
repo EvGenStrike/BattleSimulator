@@ -10,55 +10,39 @@ using System.Reflection.Metadata;
 
 namespace BattleSimulator.View;
 
-public class WinMenu
+public class IntroductionMenu
 {
     public MainView _MainView;
     public Button[] LevelsButtons { get; set; } = new Button[7];
-    public Button NextLevelButton { get; set; }
+    public Button ContinueButton { get; set; }
     public Button ExitButton { get; set; }
     public TextView CongratulationsText { get; set; }
 
     private int fieldWidth;
     private int fieldHeight;
 
-    public WinMenu(MainView mainView)
+    public IntroductionMenu(MainView mainView)
     {
         _MainView = mainView;
         fieldWidth = mainView.fieldWidth;
         fieldHeight = mainView.fieldHeight;
-        GenerateLevelsButtons();
-        GenerateNextLevelButton();
+
+        GenerateContinueButton();
         GenerateCongratulationsText();
         GenerateExitButton();
     }
 
-    public void GenerateLevelsButtons()
-    {
-        var buttonWidth = fieldWidth / 10;
-        var buttonHeight = fieldHeight / 10;
-        var positionX = fieldWidth - buttonWidth;
-        var positionY = buttonHeight;
-        for (var i = 0; i < LevelsButtons.Length; i++)
-        {
-            LevelsButtons[i] = new Button(
-                new Vector2(positionX, positionY * (i + 1)),
-                $"Level {i + 1}",
-                buttonWidth,
-                buttonHeight
-                );
-        }
-    }
 
-    public void GenerateNextLevelButton()
+    public void GenerateContinueButton()
     {
         var buttonWidth = fieldWidth / 10;
         var buttonHeight = fieldHeight / 10;
         var positionX = fieldWidth / 2 - (buttonWidth / 2);
         var positionY = buttonHeight * 2;
 
-        NextLevelButton = new Button(
+        ContinueButton = new Button(
                 new Vector2(positionX, positionY),
-                "Next level",
+                "Continue",
                 buttonWidth,
                 buttonHeight
             );
@@ -99,7 +83,7 @@ public class WinMenu
                 _MainView.ChangeLevelTo(int.Parse(levelButton.InitialText.Last().ToString()) - 1);
             };
         }
-        NextLevelButton.Click += (sender, e) =>
+        ContinueButton.Click += (sender, e) =>
         {
             _MainView.ChangeLevelTo(_MainView.Levels.IndexOf(_MainView.currentField) + 1);
         };
@@ -113,17 +97,17 @@ public class WinMenu
     {
         foreach (var pauseLevelButton in LevelsButtons)
         {
-            var levelTextureContent = _MainView.Content.Load<Texture2D>("Button_Upgraded_Sample");
+            var levelTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
             var levelFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
             pauseLevelButton.LoadContent(levelTextureContent, levelFontContent);
         }
 
-        var continueButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Upgraded_Sample");
+        var continueButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
         var continueButtonFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
-        NextLevelButton.LoadContent(continueButtonTextureContent, continueButtonFontContent);
+        ContinueButton.LoadContent(continueButtonTextureContent, continueButtonFontContent);
 
 
-        var exitButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Upgraded_Sample");
+        var exitButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
         var exitButtonFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
         ExitButton.LoadContent(exitButtonTextureContent, exitButtonFontContent);
 
@@ -137,7 +121,7 @@ public class WinMenu
         {
             levelButton.Update(gameTime);
         }
-        NextLevelButton.Update(gameTime);
+        ContinueButton.Update(gameTime);
         ExitButton.Update(gameTime);
     }
 
@@ -150,7 +134,7 @@ public class WinMenu
         {
             levelButton.Draw(gameTime, spriteBatch);
         }
-        NextLevelButton.Draw(gameTime, spriteBatch);
+        ContinueButton.Draw(gameTime, spriteBatch);
         CongratulationsText.Draw(spriteBatch, _MainView.Window);
         ExitButton.Draw(gameTime, spriteBatch);
     }

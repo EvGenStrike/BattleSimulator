@@ -371,13 +371,13 @@ public class MainView : Game
 
         foreach (var generalButton in generalButtons)
         {
-            var textureContent = Content.Load<Texture2D>("Button_Sample");
+            var textureContent = Content.Load<Texture2D>("Button_Upgraded_Sample");
             var fontContent = Content.Load<SpriteFont>("ButtonFont_Sample");
             generalButton.LoadContent(textureContent, fontContent);
         }
         foreach (var troopButton in troopButtons.Values)
         {
-            var textureContent = Content.Load<Texture2D>("Button_Sample");
+            var textureContent = Content.Load<Texture2D>("Button_Upgraded_Sample");
             var fontContent = Content.Load<SpriteFont>("ButtonFont_Sample");
             troopButton.LoadContent(textureContent, fontContent);
         }

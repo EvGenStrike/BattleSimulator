@@ -84,12 +84,12 @@ public class LoseMenu
     public void LoadContent()
     {
 
-        var continueButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
+        var continueButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Upgraded_Sample");
         var continueButtonFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
         TryAgainButton.LoadContent(continueButtonTextureContent, continueButtonFontContent);
 
 
-        var exitButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Sample");
+        var exitButtonTextureContent = _MainView.Content.Load<Texture2D>("Button_Upgraded_Sample");
         var exitButtonFontContent = _MainView.Content.Load<SpriteFont>("ButtonFont_Sample");
         ExitButton.LoadContent(exitButtonTextureContent, exitButtonFontContent);
 
