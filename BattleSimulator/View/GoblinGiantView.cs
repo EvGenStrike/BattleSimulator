@@ -9,10 +9,10 @@ using Microsoft.Xna.Framework.Media;
 
 namespace BattleSimulator.View;
 
-internal class PeasantView : ITroopView
+internal class GoblinGiantView : ITroopView
 {
-    public string SpriteAssetName => "Peasant_Sample";
-    public string HitSoundName => "Peasant_Hit";
+    public string SpriteAssetName => "GoblinGiant_Sample";
+    public string HitSoundName => "GoblinGiant_Hit";
     public Texture2D Sprite { get; private set; }
     public Song HitSound { get; private set; }
     public Dictionary<ITroop, ViewData> TroopsData { get; private set; }
@@ -88,9 +88,9 @@ internal class PeasantView : ITroopView
         switch (team)
         {
             case TeamEnum.Red:
-                return Color.Red;
+                return Color.OrangeRed;
             case TeamEnum.Blue:
-                return Color.Blue;
+                return Color.CadetBlue;
             default:
                 return Color.White;
         }

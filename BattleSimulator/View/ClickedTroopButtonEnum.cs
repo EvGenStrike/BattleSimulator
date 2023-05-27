@@ -10,5 +10,8 @@ public enum ClickedTroopButtonEnum
 {
     None,
     Peasant,
-    //Boxer
+    Zombie,
+    Archer,
+    Boxer,
+    GoblinGiant
 }

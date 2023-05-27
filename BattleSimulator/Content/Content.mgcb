@@ -13,6 +13,42 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin ../Downloads/Boxer_Sample.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:../Downloads/Boxer_Sample.png;Boxer_Sample.png
+
+#begin Archer_Hit.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Archer_Hit.mp3
+
+#begin Archer_Sample.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Archer_Sample.png
+
+#begin Boxer_Hit.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Boxer_Hit.mp3
+
 #begin Button_Sample.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -39,6 +75,24 @@
 /processorParam:TextureFormat=Compressed
 /build:File.spritefont;MyFont.spritefont
 
+#begin GoblinGiant_Hit.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:GoblinGiant_Hit.mp3
+
+#begin GoblinGiant_Sample.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GoblinGiant_Sample.png
+
 #begin Grass_Sample.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -51,6 +105,12 @@
 /processorParam:TextureFormat=Color
 /build:Grass_Sample.png
 
+#begin Peasant_Hit.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Peasant_Hit.mp3
+
 #begin Peasant_Sample.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -62,4 +122,22 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Peasant_Sample.png
+
+#begin Zombie_Hit.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Zombie_Hit.mp3
+
+#begin Zombie_Sample.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Zombie_Sample.png
 

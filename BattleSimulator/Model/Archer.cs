@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BattleSimulator.Model;
 
-internal class Peasant : ITroop
+internal class Archer : ITroop
 {
     public TeamEnum Team { get; private set; }
     public float Health { get; private set; }
@@ -26,12 +26,12 @@ internal class Peasant : ITroop
 
     private Random random = new();
 
-    public Peasant()
+    public Archer()
     {
         SetStats();
     }
 
-    public Peasant(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
+    public Archer(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
     {
         Team = team;
         SetStats();
@@ -44,12 +44,12 @@ internal class Peasant : ITroop
 
     public void SetStats()
     {
-        Health = 35 + random.Next(5) - 2;
-        Damage = 20 + random.Next(3) - 1;
-        MoveSpeed = 12 + random.Next(3) - 1;
-        AttackSpeed = 2 + (float)((random.NextDouble() - 0.5) / 2);
-        AttackDistance = 80;
-        Cost = 50;
+        Health = 40 + random.Next(9) - 4;
+        Damage = 100 + random.Next(5) - 2;
+        MoveSpeed = 5 + random.Next(3) - 1;
+        AttackSpeed = 6 + (float)((random.NextDouble() - 0.5) / 2);
+        AttackDistance = 1000;
+        Cost = 150;
     }
 
     public void Move(float angle, GameTime gameTime)
@@ -82,7 +82,7 @@ internal class Peasant : ITroop
 
     public ITroop OverrideTroop(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
     {
-        return new Peasant(team, initialPosition, width, height);
+        return new Archer(team, initialPosition, width, height);
     }
 
     public void DecreaseHealth(float deltaHealth)

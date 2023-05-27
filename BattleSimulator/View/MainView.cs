@@ -2,29 +2,35 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Threading;
 using static BattleSimulator.Model.Field;
 
 namespace BattleSimulator.View;
 
 public class MainView : Game
 {
-    public GameFeatures _gameFeatures;
-    private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
+    public GameFeatures _gameFeatures { get; private set; }
+    public GraphicsDeviceManager _graphics { get; private set; }
+    public SpriteBatch _spriteBatch { get; private set; }
 
-    private List<Field> levels;
-    private Field field;
-    private readonly int fieldWidth;
-    private readonly int fieldHeight;
+    public List<Field> Levels { get; private set; }
+    public Field currentField { get; private set; }
+    public readonly int fieldWidth;
+    public readonly int fieldHeight;
 
     private readonly List<IEnvironmentView> environmentView;
     private readonly Dictionary<Type, ITroopView> troopsView;
     private List<ITextView> textsView;
     private List<Rectangle> rectanglesView;
+
     private PauseMenu pauseMenu;
+    private WinMenu winMenu;
+    private LoseMenu loseMenu;
 
     private List<Button> generalButtons;
     private Dictionary<ClickedTroopButtonEnum, Button> troopButtons;
@@ -52,15 +58,19 @@ public class MainView : Game
         };
         textsView = new List<ITextView>
         {
-            new MoneyTextView(
+            new TextView(
                 "",
-                new Vector2(fieldWidth / 100, fieldHeight),
+                new Vector2(fieldWidth / 20, fieldHeight - fieldHeight / 30),
                 Color.Gold
                 )
         };
         troopsView = new Dictionary<Type, ITroopView>
         {
             { typeof(Peasant), new PeasantView() },
+            { typeof(Boxer), new BoxerView() },
+            { typeof(Zombie), new ZombieView() },
+            { typeof(Archer), new ArcherView() },
+            { typeof(GoblinGiant), new GoblinGiantView() },
         };
 
 
@@ -82,7 +92,9 @@ public class MainView : Game
             new Rectangle(0, 0, fieldWidth, generalButtons[0].Height),
         };
 
-        pauseMenu = new(this, fieldWidth, fieldHeight);
+        pauseMenu = new(this);
+        winMenu = new(this);
+        loseMenu = new(this);
 
         var middleLineSeparator = GenerateLineSeparator();
         var leftAcceptableArea = new Rectangle(
@@ -90,8 +102,9 @@ public class MainView : Game
             rectanglesView[1].Height,
             middleLineSeparator.X,
             troopButtonY - rectanglesView[1].Height);
-        levels = new List<Field>
+        Levels = new List<Field>
         {
+            //1
             new Field
             (
                 fieldWidth,
@@ -107,7 +120,8 @@ public class MainView : Game
                 },
                 250
             ),
-
+            
+            //2
             new Field
             (
                 fieldWidth,
@@ -119,43 +133,184 @@ public class MainView : Game
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 900)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 800)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 700)),
-
+                    new Peasant(TeamEnum.Blue, new Vector2(1300, 600)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1300, 500)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 400)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 300)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 200)),
                 },
-                450
+                350
+            ),
+
+            //3
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 130)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1300, 800)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 500)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1530, 500)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1660, 500)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1300, 300)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 930)),
+                },
+                400
+            ),
+
+            //4
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Boxer(TeamEnum.Blue, new Vector2(1200, 300)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1500, 300)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1200, 700)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1500, 700)),
+                    new Archer(TeamEnum.Blue, new Vector2(1600, 450)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1700, 200)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1700, 800)),
+                },
+                750
+            ),
+
+            //5
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 150)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 300)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 450)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 600)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 750)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 900)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 150)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 300)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 450)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 600)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 750)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 900)),
+                },
+                1400
+            ),
+
+            //6
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 300)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 450)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 600)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 900)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 300)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 450)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 600)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 900)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 300)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 450)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 600)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 900)),
+                    new GoblinGiant(TeamEnum.Blue, new Vector2(1200, 500))
+                },
+                1100
+            ),
+
+            //7
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Peasant(TeamEnum.Blue, new Vector2(1450, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1450, 250)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1450, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1450, 850)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1550, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1550, 250)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1550, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1550, 850)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 250)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 850)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 150)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 270)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 390)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 510)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 630)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 750)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 870)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1600, 450)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1600, 600)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 150)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 300)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 450)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 600)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 750)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 900)),
+                    new GoblinGiant(TeamEnum.Blue, new Vector2(1100, 300)),
+                    new GoblinGiant(TeamEnum.Blue, new Vector2(1100, 500)),
+                    new GoblinGiant(TeamEnum.Blue, new Vector2(1100, 700)),
+                },
+                2900
             )
         };
 
 
-        field = levels[0];
+        currentField = Levels[0];
 
     }
 
-    //Вызовет после атаки юнита
     private void FieldEventTroopSuccessfulAttack(object sender, TroopAttackHandler args)
     {
-        //потом заменю на анимацию
-        //if (args.SuccessfullAttack)
-        //{
-        //    var troopsGeneralView = this.troopsView[typeof(Peasant)];
-        //    var troopViewData = troopsGeneralView.TroopsData[args.troop];
-        //    if (troopViewData.SpentTime < 0.5f)
-        //    {
-        //        troopsGeneralView.SetColor(args.troop, Color.White);
-        //        troopViewData.SpentTime
-        //            += (float)args.gameTime.ElapsedGameTime.TotalSeconds;
-        //    }
-        //    else
-        //    {
-        //        troopViewData.SpentTime = 0;
-        //        troopsGeneralView.SetColor(
-        //            args.troop, troopsGeneralView.GetTeamColor(args.troop.Team)
-        //            );
-        //        args.SuccessfullAttack = false;
-        //    }
-        //}
+        var troopView = troopsView[(args.troop).GetType()];
+        var troopData = troopView.TroopsData[args.troop];
+        if (!args.SuccessfullAttack)
+        {
+            troopView.SetColor(args.troop, troopView.GetTeamColor(args.troop.Team));
+            return;
+        }
+        if (troopData.SpentTime < args.troop.AttackSpeed)
+        {
+            troopData.SpentTime += (float)args.gameTime.ElapsedGameTime.TotalSeconds;
+            if (troopData.SpentTime > 0.5)
+            {
+                troopView.SetColor(args.troop, troopView.GetTeamColor(args.troop.Team));
+            }
+        }
+        else
+        {
+            MediaPlayer.Play(troopView.HitSound);
+            troopView.SetColor(args.troop, troopView.GetHurtColor(args.troop.Team));
+            troopData.SpentTime = 0;
+        }
     }
 
     private void FieldEventTroopFailedAttack(object sender, ITroop troop)
@@ -166,16 +321,18 @@ public class MainView : Game
 
     protected override void Initialize()
     {
+        MediaPlayer.Volume = 0.1f;
+
         _gameFeatures.escPress += _gameFeatures.OnEscPressed;
         clickedTroopType = ClickedTroopButtonEnum.None;
-        field.TroopSuccessfulAttack += FieldEventTroopSuccessfulAttack;
-        field.TroopFailedAttack += FieldEventTroopFailedAttack;
+        currentField.TroopEventAttack += FieldEventTroopSuccessfulAttack;
+        currentField.TroopFailedAttack += FieldEventTroopFailedAttack;
         foreach (var generalButton in generalButtons)
         {
             generalButton.Click += (sender, e) =>
             {
-                if (field.Troops.Any(x => x.Team == TeamEnum.Red))
-                    field.ChangeGameState(GameStateEnum.Started);
+                if (currentField.Troops.Any(x => x.Team == TeamEnum.Red))
+                    currentField.ChangeGameState(GameStateEnum.Started);
             };
         }
         foreach (var troopButton in troopButtons.Values)
@@ -191,7 +348,11 @@ public class MainView : Game
                 }
             };
         }
+
         pauseMenu.Initialize();
+        winMenu.Initialize();
+        loseMenu.Initialize();
+
         foreach (var environmentElement in environmentView)
         {
             environmentElement.Initialize(_graphics, Window);
@@ -220,16 +381,21 @@ public class MainView : Game
             var fontContent = Content.Load<SpriteFont>("ButtonFont_Sample");
             troopButton.LoadContent(textureContent, fontContent);
         }
+
         pauseMenu.LoadContent();
+        winMenu.LoadContent();
+        loseMenu.LoadContent();
+
         foreach (var environmentElement in environmentView)
         {
             var content = Content.Load<Texture2D>(environmentElement.SpriteAssetName);
             environmentElement.LoadContent(content);
         }
-        foreach (var sprite in troopsView.Values)
+        foreach (var view in troopsView.Values)
         {
-            var content = Content.Load<Texture2D>(sprite.SpriteAssetName);
-            sprite.LoadContent(content);
+            var spriteAsset = Content.Load<Texture2D>(view.SpriteAssetName);
+            var hitSound = Content.Load<Song>(view.HitSoundName);
+            view.LoadContent(spriteAsset, hitSound);
         }
         foreach (var text in textsView)
         {
@@ -248,21 +414,29 @@ public class MainView : Game
     bool flag;
     protected override void Update(GameTime gameTime)
     {
+        if (currentField.GameState == GameStateEnum.Finished)
+        {
+            if (currentField.Troops.Any(x => x.Team == TeamEnum.Red))
+                winMenu.Update(gameTime);
+            else
+                loseMenu.Update(gameTime);
+            return;
+        }
         _gameFeatures.TryPauseGame();
         if (_gameFeatures.IsGamePaused)
         {
             pauseMenu.Update(gameTime);
             if (!flag)
             {
-                previousGameState = field.GameState;
+                previousGameState = currentField.GameState;
                 flag = true;
             }
-            field.ChangeGameState(GameStateEnum.Paused);
+            currentField.ChangeGameState(GameStateEnum.Paused);
             return;
         }
         else
         {
-            if (previousGameState != GameStateEnum.None && flag) field.ChangeGameState(previousGameState);
+            if (previousGameState != GameStateEnum.None && flag) currentField.ChangeGameState(previousGameState);
             flag = false;
             previousGameState = GameStateEnum.None;
         }
@@ -270,13 +444,13 @@ public class MainView : Game
 
         if (!areEnemyTroopsDrawnOnTheStart)
         {
-            foreach (var enemyTroop in field.EnemyTroops)
+            foreach (var enemyTroop in currentField.EnemyTroops)
             {
-                var troopView = troopsView[typeof(Peasant)];
+                var troopView = troopsView[enemyTroop.GetType()];
                 var sprite = troopView.Sprite;
                 var troop = enemyTroop.OverrideTroop(
                             enemyTroop.Team, enemyTroop.InitialPosition, sprite.Width, sprite.Height);
-                field.AddTroopEvent(() => troop);
+                currentField.AddTroopEvent(() => troop);
             }
             areEnemyTroopsDrawnOnTheStart = true;
         }
@@ -293,26 +467,50 @@ public class MainView : Game
         var mouseState = Mouse.GetState();
         if (mouseState.LeftButton == ButtonState.Pressed)
         {
-            field.AddTroopEvent(() =>
+            currentField.AddTroopEvent(() =>
             {
+                ITroop CreateTroop<T>()
+                {
+                    var position = new Vector2(mouseState.X, mouseState.Y);
+                    var troopType = typeof(T);
+                    var sprite = troopsView[troopType].Sprite;
+
+                    var constructor = troopType.GetConstructor(new Type[]
+                    {
+                        typeof(TeamEnum),
+                        typeof(Vector2),
+                        typeof(int),
+                        typeof(int)
+                    }
+                    );
+                    var troop = constructor.Invoke(new object[] 
+                    {
+                         TeamEnum.Red,
+                        new Vector2(
+                            position.X - sprite.Width / 2,
+                            position.Y - sprite.Height / 2
+                            ),
+                        sprite.Width,
+                        sprite.Height
+                    });
+ 
+                    return (ITroop)troop;
+                }
+
                 switch (clickedTroopType)
                 {
                     case ClickedTroopButtonEnum.None:
                         return null;
                     case ClickedTroopButtonEnum.Peasant:
-                        var position = new Vector2(mouseState.X, mouseState.Y);
-                        var sprite = troopsView[typeof(Peasant)].Sprite;
-
-                        var troop = new Peasant(
-                            TeamEnum.Red,
-                            new Vector2(
-                                position.X - sprite.Width / 2,
-                                position.Y - sprite.Height / 2
-                                ),
-                            sprite.Width,
-                            sprite.Height,
-                            gameTime);
-                        return troop;
+                        return CreateTroop<Peasant>();
+                    case ClickedTroopButtonEnum.Boxer:
+                        return CreateTroop<Boxer>();
+                    case ClickedTroopButtonEnum.Zombie:
+                        return CreateTroop<Zombie>();
+                    case ClickedTroopButtonEnum.Archer:
+                        return CreateTroop<Archer>();
+                    case ClickedTroopButtonEnum.GoblinGiant:
+                        return CreateTroop<GoblinGiant>();
                     default:
                         return null;
                 }
@@ -320,22 +518,18 @@ public class MainView : Game
         }
         else if (mouseState.RightButton == ButtonState.Pressed)
         {
-            field.RemoveTroop(mouseState.Position.ToVector2());
+            currentField.RemoveTroop(mouseState.Position.ToVector2());
         }
 
         var keyboardState = Keyboard.GetState();
         if (keyboardState.IsKeyDown(Keys.Tab))
         {
-            ChangeLevelTo(levels.IndexOf(field));
+            ChangeLevelTo(Levels.IndexOf(currentField));
         }
-        //else if (keyboardState.IsKeyDown(Keys.Escape))
-        //{
-        //    _gameFeatures.escPress?.Invoke(this, field.GameState);
-        //}
 
-        if (field.GameState == GameStateEnum.Started)
+        if (currentField.GameState == GameStateEnum.Started)
         {
-            field.PlayGame(gameTime);
+            currentField.PlayGame(gameTime);
         }
 
         base.Update(gameTime);
@@ -350,15 +544,15 @@ public class MainView : Game
         {
             environmentView.Draw(_spriteBatch);
         }
-        if (field.GameState == GameStateEnum.ArrangingTroops)
+        if (currentField.GameState == GameStateEnum.ArrangingTroops)
         {
-            _spriteBatch.DrawRectangle(field.LineSeparator, Color.Red);
+            _spriteBatch.DrawRectangle(currentField.LineSeparator, Color.Red);
             DrawUnderMouseRectangle();
-            foreach (var troop in field.Troops)
+            foreach (var troop in currentField.Troops)
             {
                 var viewType = troopsView[troop.GetType()];
                 var troopBehindMouse =
-                    field.GetTroopByPosition(Mouse.GetState().Position.ToVector2());
+                    currentField.GetTroopByPosition(Mouse.GetState().Position.ToVector2());
                 viewType.SetColorForTroopUnderMouse(Color.Gray, troopBehindMouse);
                 viewType.Draw(_spriteBatch, troop);
             }
@@ -379,23 +573,35 @@ public class MainView : Game
                 var money = string.Empty;
 
                 var textType = text.GetType();
-                if (textType == typeof(MoneyTextView))
-                    money = field.Money.ToString();
+                if (textType == typeof(TextView))
+                    money = currentField.Money.ToString();
 
                 text.Draw(_spriteBatch, Window, money);
             }
         }
-        else if (field.GameState == GameStateEnum.Started)
+        else if (currentField.GameState == GameStateEnum.Started)
         {
-            foreach (var troop in field.Troops)
+            foreach (var troop in currentField.Troops)
             {
                 var viewType = troopsView[troop.GetType()];
                 viewType.Draw(_spriteBatch, troop);
             }
         }
-        else if (field.GameState == GameStateEnum.Paused)
+        else if (currentField.GameState == GameStateEnum.Paused)
         {
             pauseMenu.Draw(gameTime, _spriteBatch);
+        }
+        else if (currentField.GameState == GameStateEnum.Finished)
+        {
+            foreach (var troop in currentField.Troops)
+            {
+                var viewType = troopsView[troop.GetType()];
+                viewType.Draw(_spriteBatch, troop);
+            }
+            if (currentField.Troops.Any(x => x.Team == TeamEnum.Red))
+                winMenu.Draw(gameTime, _spriteBatch);
+            else
+                loseMenu.Draw(gameTime, _spriteBatch);
         }
 
         _spriteBatch.End();
@@ -414,15 +620,22 @@ public class MainView : Game
 
     public void ChangeLevelTo(int id)
     {
-        field = levels[id];
+        currentField = Levels[id];
         areEnemyTroopsDrawnOnTheStart = false;
         _gameFeatures.IsGamePaused = false;
-        field.ResetField();
+        currentField.ResetField();
         previousGameState = GameStateEnum.ArrangingTroops;
+        currentField.TroopEventAttack += FieldEventTroopSuccessfulAttack;
     }
 
     private Dictionary<ClickedTroopButtonEnum, Button> GenerateTroopsButtons()
     {
+        ITroop CreateTestTroop(string troopName)
+        {
+            var instance = Activator.CreateInstance(null, $"BattleSimulator.Model.{troopName}");
+            return (ITroop)instance.Unwrap();
+        }
+
         var troopsButtons = new Dictionary<ClickedTroopButtonEnum, Button>();
         var buttonWidth = fieldWidth / 10;
         var buttonHeight = fieldHeight / 10;
@@ -432,9 +645,10 @@ public class MainView : Game
         foreach (var troopName in Enum.GetNames(typeof(ClickedTroopButtonEnum)))
         {
             if (troopName == "None") continue;
+            
             troopsButtons.Add(
                 (ClickedTroopButtonEnum)Enum.Parse(typeof(ClickedTroopButtonEnum), troopName),
-                new Button(previousPosition, troopName, buttonWidth, buttonHeight, new Peasant().Cost.ToString()));
+                new Button(previousPosition, troopName, buttonWidth, buttonHeight, CreateTestTroop(troopName).Cost.ToString()));
             previousPosition.X += buttonWidth;
         }
 
@@ -450,7 +664,7 @@ public class MainView : Game
         var underMouseRectangle = GetUnderMouseRectangle(mousePosition, currentTroopSprite);
         _spriteBatch.DrawRectangle(
             underMouseRectangle,
-            field.CanPlaceTroop(mousePosition, currentTroopSprite.Width, currentTroopSprite.Height)
+            currentField.CanPlaceTroop(mousePosition, currentTroopSprite.Width, currentTroopSprite.Height)
             ? Color.Green
             : Color.Red);
     }
