@@ -15,7 +15,8 @@ internal class PeasantView : ITroopView
     public string HitSoundName => "Peasant_Hit";
     public Texture2D Sprite { get; private set; }
     public Song HitSound { get; private set; }
-    public Dictionary<ITroop, PeasantViewData> TroopsData { get; private set; }
+    public Dictionary<ITroop, ViewData> TroopsData { get; private set; }
+    public Color HurtColor { get; private set; }
 
     
 
@@ -54,7 +55,9 @@ internal class PeasantView : ITroopView
                 //new Vector2(Sprite.Width / 2, Sprite.Height / 2),
                 Vector2.One,
                 Vector2.One,
-                SpriteEffects.None,
+                troop.Team == TeamEnum.Red
+                ? SpriteEffects.FlipHorizontally
+                : SpriteEffects.None,
                 0f
             );
     }
@@ -88,6 +91,19 @@ internal class PeasantView : ITroopView
                 return Color.Red;
             case TeamEnum.Blue:
                 return Color.Blue;
+            default:
+                return Color.White;
+        }
+    }
+
+    public Color GetHurtColor(TeamEnum team)
+    {
+        switch (team)
+        {
+            case TeamEnum.Red:
+                return Color.IndianRed;
+            case TeamEnum.Blue:
+                return Color.CornflowerBlue;
             default:
                 return Color.White;
         }

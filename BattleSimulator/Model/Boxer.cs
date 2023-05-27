@@ -49,7 +49,7 @@ internal class Boxer : ITroop
         MoveSpeed = 8 + random.Next(3) - 1;
         AttackSpeed = 2 + (float)((random.NextDouble() - 0.5) / 2);
         AttackDistance = 60;
-        Cost = 200;
+        Cost = 180;
     }
 
     public void Move(float angle, GameTime gameTime)
@@ -82,7 +82,7 @@ internal class Boxer : ITroop
 
     public ITroop OverrideTroop(TeamEnum team, Vector2 initialPosition, int width = 0, int height = 0)
     {
-        return new Peasant(team, initialPosition, width, height);
+        return new Boxer(team, initialPosition, width, height);
     }
 
     public void DecreaseHealth(float deltaHealth)

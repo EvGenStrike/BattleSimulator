@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using static BattleSimulator.Model.Field;
 
 namespace BattleSimulator.View;
@@ -44,7 +45,7 @@ public class MainView : Game
         {
             PreferredBackBufferWidth = fieldWidth,
             PreferredBackBufferHeight = fieldHeight,
-            //IsFullScreen = true,
+            IsFullScreen = true,
         };
         _gameFeatures = new((Game)this);
 
@@ -59,7 +60,7 @@ public class MainView : Game
         {
             new TextView(
                 "",
-                new Vector2(fieldWidth / 30, fieldHeight - fieldHeight / 30),
+                new Vector2(fieldWidth / 20, fieldHeight - fieldHeight / 30),
                 Color.Gold
                 )
         };
@@ -67,6 +68,9 @@ public class MainView : Game
         {
             { typeof(Peasant), new PeasantView() },
             { typeof(Boxer), new BoxerView() },
+            { typeof(Zombie), new ZombieView() },
+            { typeof(Archer), new ArcherView() },
+            { typeof(GoblinGiant), new GoblinGiantView() },
         };
 
 
@@ -100,6 +104,7 @@ public class MainView : Game
             troopButtonY - rectanglesView[1].Height);
         Levels = new List<Field>
         {
+            //1
             new Field
             (
                 fieldWidth,
@@ -115,7 +120,8 @@ public class MainView : Game
                 },
                 250
             ),
-
+            
+            //2
             new Field
             (
                 fieldWidth,
@@ -127,12 +133,153 @@ public class MainView : Game
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 900)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 800)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 700)),
-
+                    new Peasant(TeamEnum.Blue, new Vector2(1300, 600)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1300, 500)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 400)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 300)),
                     new Peasant(TeamEnum.Blue, new Vector2(1300, 200)),
                 },
+                350
+            ),
+
+            //3
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 130)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1300, 800)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 500)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1530, 500)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1660, 500)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1300, 300)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 930)),
+                },
                 400
+            ),
+
+            //4
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Boxer(TeamEnum.Blue, new Vector2(1200, 300)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1500, 300)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1200, 700)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1500, 700)),
+                    new Archer(TeamEnum.Blue, new Vector2(1600, 450)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1700, 200)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1700, 800)),
+                },
+                750
+            ),
+
+            //5
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 150)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 300)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 450)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 600)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 750)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 900)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 150)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 300)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 450)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 600)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 750)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1500, 900)),
+                },
+                1400
+            ),
+
+            //6
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 300)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 450)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 600)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1800, 900)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 300)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 450)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 600)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1600, 900)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 300)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 450)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 600)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1400, 900)),
+                    new GoblinGiant(TeamEnum.Blue, new Vector2(1200, 500))
+                },
+                1100
+            ),
+
+            //7
+            new Field
+            (
+                fieldWidth,
+                fieldHeight,
+                middleLineSeparator,
+                leftAcceptableArea,
+                new List<ITroop>
+                {
+                    new Peasant(TeamEnum.Blue, new Vector2(1450, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1450, 250)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1450, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1450, 850)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1550, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1550, 250)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1550, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1550, 850)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 150)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 250)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 750)),
+                    new Peasant(TeamEnum.Blue, new Vector2(1350, 850)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 150)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 270)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 390)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 510)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 630)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 750)),
+                    new Archer(TeamEnum.Blue, new Vector2(1800, 870)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1600, 450)),
+                    new Boxer(TeamEnum.Blue, new Vector2(1600, 600)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 150)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 300)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 450)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 600)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 750)),
+                    new Zombie(TeamEnum.Blue, new Vector2(1400, 900)),
+                    new GoblinGiant(TeamEnum.Blue, new Vector2(1100, 300)),
+                    new GoblinGiant(TeamEnum.Blue, new Vector2(1100, 500)),
+                    new GoblinGiant(TeamEnum.Blue, new Vector2(1100, 700)),
+                },
+                2900
             )
         };
 
@@ -161,9 +308,7 @@ public class MainView : Game
         else
         {
             MediaPlayer.Play(troopView.HitSound);
-            troopView.SetColor(args.troop, args.troop.Team == TeamEnum.Red
-                                            ? Color.IndianRed
-                                            : Color.CornflowerBlue);
+            troopView.SetColor(args.troop, troopView.GetHurtColor(args.troop.Team));
             troopData.SpentTime = 0;
         }
     }
@@ -357,21 +502,15 @@ public class MainView : Game
                     case ClickedTroopButtonEnum.None:
                         return null;
                     case ClickedTroopButtonEnum.Peasant:
-                        //var position = new Vector2(mouseState.X, mouseState.Y);
-                        //var sprite = troopsView[typeof(Peasant)].Sprite;
-
-                        //var troop = new Peasant(
-                        //    TeamEnum.Red,
-                        //    new Vector2(
-                        //        position.X - sprite.Width / 2,
-                        //        position.Y - sprite.Height / 2
-                        //        ),
-                        //    sprite.Width,
-                        //    sprite.Height);
-                        //return troop;
                         return CreateTroop<Peasant>();
                     case ClickedTroopButtonEnum.Boxer:
                         return CreateTroop<Boxer>();
+                    case ClickedTroopButtonEnum.Zombie:
+                        return CreateTroop<Zombie>();
+                    case ClickedTroopButtonEnum.Archer:
+                        return CreateTroop<Archer>();
+                    case ClickedTroopButtonEnum.GoblinGiant:
+                        return CreateTroop<GoblinGiant>();
                     default:
                         return null;
                 }

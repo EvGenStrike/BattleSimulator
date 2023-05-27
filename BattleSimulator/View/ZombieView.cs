@@ -9,14 +9,16 @@ using Microsoft.Xna.Framework.Media;
 
 namespace BattleSimulator.View;
 
-internal class BoxerView : ITroopView
+internal class ZombieView : ITroopView
 {
-    public string SpriteAssetName => "Boxer_Sample";
-    public string HitSoundName => "Boxer_Hit";
+    public string SpriteAssetName => "Zombie_Sample";
+    public string HitSoundName => "Zombie_Hit";
     public Texture2D Sprite { get; private set; }
     public Song HitSound { get; private set; }
     public Dictionary<ITroop, ViewData> TroopsData { get; private set; }
     public Color HurtColor { get; private set; }
+
+    
 
     public void Initialize(GraphicsDeviceManager graphics, GameWindow gameWindow)
     {
@@ -53,7 +55,7 @@ internal class BoxerView : ITroopView
                 //new Vector2(Sprite.Width / 2, Sprite.Height / 2),
                 Vector2.One,
                 Vector2.One,
-                troop.Team == TeamEnum.Blue
+                troop.Team == TeamEnum.Red
                 ? SpriteEffects.FlipHorizontally
                 : SpriteEffects.None,
                 0f
@@ -86,9 +88,9 @@ internal class BoxerView : ITroopView
         switch (team)
         {
             case TeamEnum.Red:
-                return Color.IndianRed;
+                return Color.Red;
             case TeamEnum.Blue:
-                return Color.Blue;
+                return Color.CadetBlue;
             default:
                 return Color.White;
         }
@@ -99,11 +101,12 @@ internal class BoxerView : ITroopView
         switch (team)
         {
             case TeamEnum.Red:
-                return Color.MediumVioletRed;
+                return Color.IndianRed;
             case TeamEnum.Blue:
                 return Color.CornflowerBlue;
             default:
                 return Color.White;
         }
     }
+
 }

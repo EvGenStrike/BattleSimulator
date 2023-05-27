@@ -15,8 +15,9 @@ public interface ITroopView
     public string SpriteAssetName { get; }
     public string HitSoundName { get; }
     public Texture2D Sprite { get; }
-    public Dictionary<ITroop, PeasantViewData> TroopsData { get; }
+    public Dictionary<ITroop, ViewData> TroopsData { get; }
     public Song HitSound { get; }
+    public Color HurtColor { get; }
 
     public void Initialize(
         GraphicsDeviceManager graphics,
@@ -28,4 +29,5 @@ public interface ITroopView
     public void SetColorForTroopUnderMouse(Color color, ITroop troop);
     public void SetColor(ITroop troop, Color color);
     public Color GetTeamColor(TeamEnum team);
+    public Color GetHurtColor(TeamEnum team);
 }
